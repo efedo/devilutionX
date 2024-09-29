@@ -1659,8 +1659,8 @@ size_t OnKnockback(const TCmd *pCmd, Player &player)
 
 	if (gbBufferMsgs != 1 && player.isOnActiveLevel() && monsterIdx < MaxMonsters) {
 		Monster &monster = Monsters[monsterIdx];
-		M_GetKnockback(monster, player.position.tile);
-		M_StartHit(monster, player, 0);
+		monster.getKnockback(player.position.tile);
+		monster.startHit(player, 0);
 	}
 
 	return sizeof(message);
@@ -1759,7 +1759,7 @@ size_t OnMonstDeath(const TCmd *pCmd, Player &player)
 		if (&player != MyPlayer && InDungeonBounds(position) && monsterIdx < MaxMonsters) {
 			Monster &monster = Monsters[monsterIdx];
 			if (player.isOnActiveLevel())
-				M_SyncStartKill(monster, position, player);
+				monster.syncStartKill(position, player);
 			delta_kill_monster(monster, position, player);
 		}
 	} else {
@@ -1778,7 +1778,7 @@ size_t OnKillGolem(const TCmd *pCmd, Player &player)
 		if (&player != MyPlayer && InDungeonBounds(position)) {
 			Monster &monster = Monsters[player.getId()];
 			if (player.isOnActiveLevel())
-				M_SyncStartKill(monster, position, player);
+				monster.syncStartKill(position, player);
 			delta_kill_monster(monster, position, player); // BUGFIX: should be p->wParam1, plrlevel will be incorrect if golem is killed because player changed levels
 		}
 	} else {
@@ -2704,7 +2704,7 @@ void DeltaLoadLevel()
 				continue;
 
 			Monster &monster = Monsters[i];
-			M_ClearSquares(monster);
+			monster.clearSquares();
 			{
 				const WorldTilePosition position = deltaLevel.monster[i].position;
 				monster.position.tile = position;
@@ -2718,7 +2718,7 @@ void DeltaLoadLevel()
 				monster.whoHit = deltaLevel.monster[i].mWhoHit;
 			}
 			if (deltaLevel.monster[i].hitPoints == 0) {
-				M_ClearSquares(monster);
+				monster.clearSquares();
 				if (monster.ai != MonsterAIID::Diablo) {
 					if (monster.isUnique()) {
 						AddCorpse(monster.position.tile, monster.corpseId, monster.direction);
@@ -2727,7 +2727,7 @@ void DeltaLoadLevel()
 					}
 				}
 				monster.isInvalid = true;
-				M_UpdateRelations(monster);
+				monster.updateRelations();
 			} else {
 				decode_enemy(monster, deltaLevel.monster[i]._menemy);
 				if (monster.position.tile != Point { 0, 0 } && monster.position.tile != GolemHoldingCell)
@@ -2736,7 +2736,7 @@ void DeltaLoadLevel()
 					GolumAi(monster);
 					monster.flags |= (MFLAG_TARGETS_MONSTER | MFLAG_GOLEM);
 				} else {
-					M_StartStand(monster, monster.direction);
+					monster.startStand();
 				}
 				monster.activeForTicks = deltaLevel.monster[i]._mactive;
 			}

@@ -625,7 +625,7 @@ bool PlrHitMonst(Player &player, Monster &monster, bool adjacentDamage = false)
 			dam = monster.hitPoints; /* ensure monster is killed with one hit */
 		}
 #endif
-		ApplyMonsterDamage(DamageType::Physical, monster, dam);
+		monster.applyDamage(DamageType::Physical, dam);
 	}
 
 	int skdam = 0;
@@ -676,11 +676,11 @@ bool PlrHitMonst(Player &player, Monster &monster, bool adjacentDamage = false)
 		RedrawComponent(PanelDrawComponent::Health);
 	}
 	if ((monster.hitPoints >> 6) <= 0) {
-		M_StartKill(monster, player);
+		monster.startKill(player);
 	} else {
 		if (monster.mode != MonsterMode::Petrified && HasAnyOf(player._pIFlags, ItemSpecialEffect::Knockback))
-			M_GetKnockback(monster, player.position.tile);
-		M_StartHit(monster, player, dam);
+			monster.getKnockback(player.position.tile);
+		monster.startHit(player, dam);
 	}
 	return true;
 }

@@ -470,7 +470,55 @@ struct Monster { // note: missing field _mAFNum
 	 * @param isMoving specifies whether the monster is moving or not (true/moving results in a negative index in dMonster)
 	 */
 	void occupyTile(Point position, bool isMoving) const;
+
+	void applyDamage(DamageType damageType, int damage); // was ApplyMonsterDamage
+	bool isTalker() const; // was M_Talker
+	void startStand(Direction md = Direction::NoDirection); // was M_StartStand
+	void clearSquares() const; // was M_ClearSquares	
+	void getKnockback(WorldTilePosition attackerStartPos); // was M_GetKnockback
+	void startHit(int dam); // was M_StartHit
+	void startHit(const Player &player, int dam); // was M_StartHit
+
+	bool walk(); // was MonsterWalk
+	bool walk(Direction md); // was MonsterWalk
+
+	void startDeath(const Player &player, bool sendmsg); // was StartMonsterDeath
+	void death(Direction md, bool sendmsg); // was MonsterDeath
+	void startKill(const Player &player); // was M_StartKill
+	void syncStartKill(Point position, const Player &player); // was M_SyncStartKill
+
+	void death();
+
+	bool dirOK(Direction mdir) const; // was DirOK
+
+	void syncAnim(); // was SyncMonsterAnim
+	void playEffect(MonsterSound mode); // was PlayEffect
+
+	/**
+	 * @brief Check that the given tile is available to the monster
+	 */
+	bool isTileAvailable(Point position) const; // was IsTileAvailable
+
+	                                                      //private:
+	bool randomWalk(Direction md);
+	void updateRelations() const; // was M_UpdateRelations
 };
+
+void GolumAi(Monster &monster);
+
+// tmp
+
+
+
+
+
+void TalktoMonster(Player &player, Monster &monster);
+bool CanTalkToMonst(const Monster &monster);
+int encode_enemy(Monster &monster);
+void decode_enemy(Monster &monster, int enemyId);
+
+
+
 
 extern size_t LevelMonsterTypeCount;
 extern Monster Monsters[MaxMonsters];
@@ -509,47 +557,34 @@ void LoadDeltaSpawnedMonster(size_t typeIndex, size_t monsterId, uint32_t seed);
  * @brief Initialize a spanwed monster (from a network message or from SpawnMonster-function).
  */
 void InitializeSpawnedMonster(Point position, Direction dir, size_t typeIndex, size_t monsterId, uint32_t seed);
+
 void AddDoppelganger(Monster &monster);
-void ApplyMonsterDamage(DamageType damageType, Monster &monster, int damage);
-bool M_Talker(const Monster &monster);
-void M_StartStand(Monster &monster, Direction md);
-void M_ClearSquares(const Monster &monster);
-void M_GetKnockback(Monster &monster, WorldTilePosition attackerStartPos);
-void M_StartHit(Monster &monster, int dam);
-void M_StartHit(Monster &monster, const Player &player, int dam);
-void StartMonsterDeath(Monster &monster, const Player &player, bool sendmsg);
-void MonsterDeath(Monster &monster, Direction md, bool sendmsg);
 void KillMyGolem();
-void M_StartKill(Monster &monster, const Player &player);
-void M_SyncStartKill(Monster &monster, Point position, const Player &player);
-void M_UpdateRelations(const Monster &monster);
+
 void DoEnding();
 void PrepDoEnding();
-bool Walk(Monster &monster, Direction md);
-void GolumAi(Monster &monster);
+
 void DeleteMonsterList();
 void ProcessMonsters();
 void FreeMonsters();
-bool DirOK(const Monster &monster, Direction mdir);
+
 bool PosOkMissile(Point position);
 bool LineClearMissile(Point startPoint, Point endPoint);
 bool LineClear(tl::function_ref<bool(Point)> clear, Point startPoint, Point endPoint);
-void SyncMonsterAnim(Monster &monster);
+
 void M_FallenFear(Point position);
 void PrintMonstHistory(int mt);
 void PrintUniqueHistory();
-void PlayEffect(Monster &monster, MonsterSound mode);
+
 void MissToMonst(Missile &missile, Point position);
 
 Monster *FindMonsterAtPosition(Point position, bool ignoreMovingMonsters = false);
 Monster *FindUniqueMonster(UniqueMonsterType monsterType);
 
-/**
- * @brief Check that the given tile is available to the monster
- */
-bool IsTileAvailable(const Monster &monster, Point position);
+
 bool IsSkel(_monster_id mt);
 bool IsGoat(_monster_id mt);
+
 /**
  * @brief Reveals a monster that was hiding in a container
  * @param monster instance returned from a previous call to PreSpawnSkeleton
@@ -557,10 +592,11 @@ bool IsGoat(_monster_id mt);
  */
 void ActivateSkeleton(Monster &monster, Point position);
 Monster *PreSpawnSkeleton();
-void TalktoMonster(Player &player, Monster &monster);
+
+
+
 void SpawnGolem(Player &player, Monster &golem, Point position, Missile &missile);
-bool CanTalkToMonst(const Monster &monster);
-int encode_enemy(Monster &monster);
-void decode_enemy(Monster &monster, int enemyId);
+
+
 
 } // namespace devilution

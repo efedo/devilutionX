@@ -439,7 +439,7 @@ VirtualGamepadButtonType PrimaryActionButtonRenderer::GetDungeonButtonType()
 {
 	if (pcursmonst != -1) {
 		const Monster &monster = Monsters[pcursmonst];
-		if (M_Talker(monster) || monster.talkMsg != TEXT_NONE)
+		if (monster.isTalker() || monster.talkMsg != TEXT_NONE)
 			return GetTalkButtonType(virtualPadButton->isHeld);
 	}
 	return GetAttackButtonType(virtualPadButton->isHeld);

@@ -2169,8 +2169,8 @@ void DoTelekinesis()
 	if (pcursitem != -1)
 		NetSendCmdGItem(true, CMD_REQUESTAGITEM, *MyPlayer, pcursitem);
 	if (pcursmonst != -1) {
-		Monster &monter = Monsters[pcursmonst];
-		if (!M_Talker(monter) && monter.talkMsg == TEXT_NONE)
+		Monster &monster = Monsters[pcursmonst];
+		if (!monster.isTalker() && monster.talkMsg == TEXT_NONE)
 			NetSendCmdParam1(true, CMD_KNOCKBACK, pcursmonst);
 	}
 	NewCursor(CURSOR_HAND);

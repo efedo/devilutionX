@@ -14,6 +14,66 @@
           "name": "DISCORD_INTEGRATION",
           "value": "True",
           "type": "BOOL"
+        },
+        {
+          "name": "DEVILUTIONX_SYSTEM_ZLIB",
+          "value": "False",
+          "type": "BOOL"
+        },
+        {
+          "name": "DEVILUTIONX_SYSTEM_SDL2",
+          "value": "False",
+          "type": "BOOL"
+        },
+        {
+          "name": "DEVILUTIONX_SYSTEM_BZIP2",
+          "value": "False",
+          "type": "BOOL"
+        },
+        {
+          "name": "DEVILUTIONX_SYSTEM_LIBSODIUM",
+          "value": "False",
+          "type": "BOOL"
+        },
+        {
+          "name": "DEVILUTIONX_SYSTEM_GOOGLETEST",
+          "value": "False",
+          "type": "BOOL"
+        },
+        {
+          "name": "DEVILUTIONX_SYSTEM_BENCHMARK",
+          "value": "False",
+          "type": "BOOL"
+        },
+        {
+          "name": "DEVILUTIONX_STATIC_ZLIB",
+          "value": "True",
+          "type": "BOOL"
+        },
+        {
+          "name": "DEVILUTIONX_STATIC_BZIP2",
+          "value": "True",
+          "type": "BOOL"
+        },
+        {
+          "name": "DEVILUTIONX_STATIC_LIBSODIUM",
+          "value": "True",
+          "type": "BOOL"
+        },
+        {
+          "name": "DEVILUTIONX_STATIC_SDL2",
+          "value": "True",
+          "type": "BOOL"
+        },
+        {
+          "name": "DEVILUTIONX_STATIC_GOOGLETEST",
+          "value": "True",
+          "type": "BOOL"
+        },
+        {
+          "name": "DEVILUTIONX_STATIC_BENCHMARK",
+          "value": "True",
+          "type": "BOOL"
         }
       ]
     },

@@ -186,7 +186,7 @@ void MoveMissilePos(Missile &missile)
 	}
 
 	auto target = missile.position.tile + moveDirection;
-	if (IsTileAvailable(*missile.sourceMonster(), target)) {
+	if (missile.sourceMonster()->isTileAvailable(target)) {
 		missile.position.tile = target;
 		missile.position.offset += Displacement(moveDirection).worldToScreen();
 	}
@@ -259,18 +259,18 @@ bool MonsterMHit(const Player &player, int monsterId, int mindam, int maxdam, in
 		dam >>= 2;
 
 	if (&player == MyPlayer)
-		ApplyMonsterDamage(damageType, monster, dam);
+		monster.applyDamage(damageType, dam);
 
 	if (monster.hitPoints >> 6 <= 0) {
-		M_StartKill(monster, player);
+		monster.startKill(player);
 	} else if (resist) {
 		monster.tag(player);
-		PlayEffect(monster, MonsterSound::Hit);
+		monster.playEffect(MonsterSound::Hit);
 	} else {
 		if (monster.mode != MonsterMode::Petrified && missileData.isArrow() && HasAnyOf(player._pIFlags, ItemSpecialEffect::Knockback))
-			M_GetKnockback(monster, startPos);
+			monster.getKnockback(startPos);
 		if (monster.type().type != MT_GOLEM)
-			M_StartHit(monster, player, dam);
+			monster.startHit(player, dam);
 	}
 
 	if (monster.activeForTicks == 0) {
@@ -961,17 +961,17 @@ bool MonsterTrapHit(int monsterId, int mindam, int maxdam, int dist, MissileID t
 		dam <<= 6;
 	if (resist)
 		dam /= 4;
-	ApplyMonsterDamage(damageType, monster, dam);
+	monster.applyDamage(damageType, dam);
 #ifdef _DEBUG
 	if (DebugGodMode)
 		monster.hitPoints = 0;
 #endif
 	if (monster.hitPoints >> 6 <= 0) {
-		MonsterDeath(monster, monster.direction, true);
+		monster.death(monster.direction, true);
 	} else if (resist) {
-		PlayEffect(monster, MonsterSound::Hit);
+		monster.playEffect(MonsterSound::Hit);
 	} else if (monster.type().type != MT_GOLEM) {
-		M_StartHit(monster, dam);
+		monster.startHit(dam);
 	}
 	return true;
 }
@@ -3674,7 +3674,7 @@ void ProcessRhino(Missile &missile)
 	}
 	UpdateMissilePos(missile);
 	Point newPos = missile.position.tile;
-	if (!IsTileAvailable(monster, newPos) || (monster.ai == MonsterAIID::Snake && !IsTileAvailable(monster, newPosSnake))) {
+	if (!monster.isTileAvailable(newPos) || (monster.ai == MonsterAIID::Snake && !monster.isTileAvailable(newPosSnake))) {
 		MissToMonst(missile, prevPos);
 		missile._miDelFlag = true;
 		return;
