@@ -12,6 +12,7 @@
 #include "lighting.h"
 #include "misdat.h"
 #include "monster.h"
+#include "monster_beastiary.h"
 
 namespace devilution {
 
@@ -51,8 +52,8 @@ void InitCorpses()
 
 	int8_t nd = 0;
 
-	for (size_t i = 0; i < LevelMonsterTypeCount; i++) {
-		CMonster &monsterType = LevelMonsterTypes[i];
+	for (size_t i = 0; i < Beastiary.LevelMonsterTypeCount; i++) {
+		CMonster &monsterType = Beastiary.LevelMonsterTypes[i];
 		if (mtypes[monsterType.type] != 0)
 			continue;
 

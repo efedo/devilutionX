@@ -31,6 +31,8 @@ set(libdevilutionx_SRCS
   missiles.cpp
   monstdat.cpp
   monster.cpp
+  monster_beastiary.cpp
+  monster_manager.cpp
   movie.cpp
   msg.cpp
   multi.cpp

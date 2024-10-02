@@ -773,7 +773,7 @@ bool DoAttack(Player &player)
 		Monster *monster = FindMonsterAtPosition(position);
 
 		if (monster != nullptr) {
-			if (CanTalkToMonst(*monster)) {
+			if (monster->canTalkTo()) {
 				player.position.temp.x = 0; /** @todo Looks to be irrelevant, probably just remove it */
 				return false;
 			}
@@ -803,7 +803,7 @@ bool DoAttack(Player &player)
 			position = player.position.tile + Right(player._pdir);
 			monster = FindMonsterAtPosition(position);
 			if (monster != nullptr) {
-				if (!CanTalkToMonst(*monster) && monster->position.old == position) {
+				if (!monster->canTalkTo() && monster->position.old == position) {
 					if (PlrHitMonst(player, *monster, true))
 						didhit = true;
 				}
@@ -811,7 +811,7 @@ bool DoAttack(Player &player)
 			position = player.position.tile + Left(player._pdir);
 			monster = FindMonsterAtPosition(position);
 			if (monster != nullptr) {
-				if (!CanTalkToMonst(*monster) && monster->position.old == position) {
+				if (!monster->canTalkTo() && monster->position.old == position) {
 					if (PlrHitMonst(player, *monster, true))
 						didhit = true;
 				}
@@ -1142,7 +1142,7 @@ void CheckNewPath(Player &player, bool pmWillBeCalled)
 					if (x < 2 && y < 2) {
 						ClrPlrPath(player);
 						if (player.destAction == ACTION_ATTACKMON && monster->talkMsg != TEXT_NONE && monster->talkMsg != TEXT_VILE14) {
-							TalktoMonster(player, *monster);
+							monster->talkTo(player);
 						} else {
 							StartAttack(player, d, pmWillBeCalled);
 						}
@@ -1208,7 +1208,7 @@ void CheckNewPath(Player &player, bool pmWillBeCalled)
 			if (x <= 1 && y <= 1) {
 				d = GetDirection(player.position.future, monster->position.future);
 				if (monster->talkMsg != TEXT_NONE && monster->talkMsg != TEXT_VILE14) {
-					TalktoMonster(player, *monster);
+					monster->talkTo(player);
 				} else {
 					StartAttack(player, d, pmWillBeCalled);
 				}
@@ -1229,7 +1229,7 @@ void CheckNewPath(Player &player, bool pmWillBeCalled)
 		case ACTION_RATTACKMON:
 			d = GetDirection(player.position.future, monster->position.future);
 			if (monster->talkMsg != TEXT_NONE && monster->talkMsg != TEXT_VILE14) {
-				TalktoMonster(player, *monster);
+				monster->talkTo(player);
 			} else {
 				StartRangeAttack(player, d, monster->position.future.x, monster->position.future.y, pmWillBeCalled);
 			}
@@ -1881,7 +1881,7 @@ void Player::UpdatePreviewCelSprite(_cmd_id cmdId, Point point, uint16_t wParam1
 		Monster &monster = Monsters[wParam1];
 		point = monster.position.future;
 		minimalWalkDistance = 2;
-		if (!CanTalkToMonst(monster)) {
+		if (!monster.canTalkTo()) {
 			dir = GetDirection(position.future, monster.position.future);
 			graphic = player_graphic::Attack;
 		}

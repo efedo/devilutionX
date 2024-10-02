@@ -129,8 +129,8 @@ bool TFit_SkelRoom(int t)
 		return false;
 	}
 
-	for (size_t i = 0; i < LevelMonsterTypeCount; i++) {
-		if (IsSkel(LevelMonsterTypes[i].type)) {
+	for (size_t i = 0; i < Beastiary.LevelMonsterTypeCount; i++) {
+		if (IsSkel(Beastiary.LevelMonsterTypes[i].type)) {
 			themeVar1 = i;
 			return TFit_Obj5(t);
 		}
@@ -141,8 +141,8 @@ bool TFit_SkelRoom(int t)
 
 bool TFit_GoatShrine(int t)
 {
-	for (size_t i = 0; i < LevelMonsterTypeCount; i++) {
-		if (IsGoat(LevelMonsterTypes[i].type)) {
+	for (size_t i = 0; i < Beastiary.LevelMonsterTypeCount; i++) {
+		if (IsGoat(Beastiary.LevelMonsterTypes[i].type)) {
 			themeVar1 = i;
 			return TFit_Obj5(t);
 		}
@@ -350,8 +350,8 @@ void PlaceThemeMonsts(int t, int f)
 	size_t scattertypes[138];
 
 	int numscattypes = 0;
-	for (size_t i = 0; i < LevelMonsterTypeCount; i++) {
-		if ((LevelMonsterTypes[i].placeFlags & PLACE_SCATTER) != 0) {
+	for (size_t i = 0; i < Beastiary.LevelMonsterTypeCount; i++) {
+		if ((Beastiary.LevelMonsterTypes[i].placeFlags & PLACE_SCATTER) != 0) {
 			scattertypes[numscattypes] = i;
 			numscattypes++;
 		}
@@ -361,7 +361,7 @@ void PlaceThemeMonsts(int t, int f)
 		for (int xp = 0; xp < MAXDUNX; xp++) {
 			if (dTransVal[xp][yp] == themes[t].ttval && IsTileNotSolid({ xp, yp }) && dItem[xp][yp] == 0 && !IsObjectAtPosition({ xp, yp })) {
 				if (FlipCoin(f)) {
-					AddMonster({ xp, yp }, static_cast<Direction>(GenerateRnd(8)), mtype, true);
+					MonsterManager.AddMonster({ xp, yp }, static_cast<Direction>(GenerateRnd(8)), mtype, true);
 				}
 			}
 		}
@@ -703,7 +703,7 @@ void Theme_GoatShrine(int t)
 	for (int yy = themey - 1; yy <= themey + 1; yy++) {
 		for (int xx = themex - 1; xx <= themex + 1; xx++) {
 			if (dTransVal[xx][yy] == themes[t].ttval && IsTileNotSolid({ xx, yy }) && (xx != themex || yy != themey)) {
-				AddMonster({ xx, yy }, Direction::SouthWest, themeVar1, true);
+				MonsterManager.AddMonster({ xx, yy }, Direction::SouthWest, themeVar1, true);
 			}
 		}
 	}

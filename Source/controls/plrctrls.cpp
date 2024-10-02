@@ -271,7 +271,7 @@ void FindRangedTarget()
 		if (!CanTargetMonster(monster))
 			continue;
 
-		const bool newCanTalk = CanTalkToMonst(monster);
+		const bool newCanTalk = monster.canTalkTo();
 		if (pcursmonst != -1 && !canTalk && newCanTalk)
 			continue;
 		const int newDdistance = GetDistanceRanged(monster.position.future);
@@ -334,7 +334,7 @@ void FindMeleeTarget()
 					const int mi = std::abs(dMonster[dx][dy]) - 1;
 					const Monster &monster = Monsters[mi];
 					if (CanTargetMonster(monster)) {
-						const bool newCanTalk = CanTalkToMonst(monster);
+						const bool newCanTalk = monster.canTalkTo();
 						if (pcursmonst != -1 && !canTalk && newCanTalk)
 							continue;
 						const int newRotations = GetRotaryDistance({ dx, dy });
@@ -526,7 +526,7 @@ void Interact()
 	}
 
 	if (pcursmonst != -1) {
-		if (!myPlayer.UsesRangedWeapon() || CanTalkToMonst(Monsters[pcursmonst])) {
+		if (!myPlayer.UsesRangedWeapon() || Monsters[pcursmonst].canTalkTo()) {
 			NetSendCmdParam1(true, CMD_ATTACKID, pcursmonst);
 		} else {
 			NetSendCmdParam1(true, CMD_RATTACKID, pcursmonst);

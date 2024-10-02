@@ -2348,7 +2348,7 @@ void AddGolem(Missile &missile, AddMissileParameter &parameter)
 		    parameter.dst, 0, 5);
 
 		if (spawnPosition) {
-			SpawnGolem(player, golem, *spawnPosition, missile);
+			golem.spawnGolem(player, *spawnPosition, missile);
 		}
 	}
 }

@@ -60,6 +60,9 @@
 #include "minitext.h"
 #include "missiles.h"
 #include "monstdat.h"
+#include "monster.h"
+#include "monster_beastiary.h"
+#include "monster_manager.h"
 #include "movie.h"
 #include "multi.h"
 #include "nthread.h"
@@ -268,7 +271,7 @@ void LeftMouseCmd(bool bShift)
 			LastMouseButtonAction = MouseActionType::Attack;
 			NetSendCmdLoc(MyPlayerId, true, CMD_RATTACKXY, cursPosition);
 		} else if (pcursmonst != -1) {
-			if (CanTalkToMonst(Monsters[pcursmonst])) {
+			if (Monsters[pcursmonst].canTalkTo()) {
 				NetSendCmdParam1(true, CMD_ATTACKID, pcursmonst);
 			} else {
 				LastMouseButtonAction = MouseActionType::AttackMonsterTarget;
@@ -281,7 +284,7 @@ void LeftMouseCmd(bool bShift)
 	} else {
 		if (bShift) {
 			if (pcursmonst != -1) {
-				if (CanTalkToMonst(Monsters[pcursmonst])) {
+				if (Monsters[pcursmonst].canTalkTo()) {
 					NetSendCmdParam1(true, CMD_ATTACKID, pcursmonst);
 				} else {
 					LastMouseButtonAction = MouseActionType::Attack;
@@ -2466,7 +2469,7 @@ void FreeGameMem()
 	pMegaTiles = nullptr;
 	pSpecialCels = std::nullopt;
 
-	FreeMonsters();
+	Beastiary.FreeMonsters();
 	FreeMissileGFX();
 	FreeObjectGFX();
 	FreeTownerGFX();
@@ -2905,7 +2908,7 @@ void LoadGameLevel(bool firstflag, lvl_entry lvldir)
 		InitLighting();
 	}
 
-	InitLevelMonsters();
+	Beastiary.InitLevelMonsters();
 	IncProgress();
 
 	Player &myPlayer = *MyPlayer;
@@ -2916,7 +2919,7 @@ void LoadGameLevel(bool firstflag, lvl_entry lvldir)
 		SetRndSeed(DungeonSeeds[currlevel]);
 
 		if (leveltype != DTYPE_TOWN) {
-			GetLevelMTypes();
+			Beastiary.GetLevelMTypes();
 			InitThemes();
 			if (!HeadlessMode)
 				LoadAllGFX();
@@ -3026,7 +3029,7 @@ void LoadGameLevel(bool firstflag, lvl_entry lvldir)
 	} else {
 		LoadSetMap();
 		IncProgress();
-		GetLevelMTypes();
+		Beastiary.GetLevelMTypes();
 		IncProgress();
 		InitGolems();
 		InitMonsters();

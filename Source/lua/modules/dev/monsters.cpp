@@ -47,8 +47,8 @@ std::string DebugCmdSpawnUniqueMonster(std::string name, std::optional<unsigned>
 	size_t id = MaxLvlMTypes - 1;
 	bool found = false;
 
-	for (size_t i = 0; i < LevelMonsterTypeCount; i++) {
-		if (LevelMonsterTypes[i].type == mtype) {
+	for (size_t i = 0; i < Beastiary.LevelMonsterTypeCount; i++) {
+		if (Beastiary.LevelMonsterTypes[i].type == mtype) {
 			id = i;
 			found = true;
 			break;
@@ -56,11 +56,11 @@ std::string DebugCmdSpawnUniqueMonster(std::string name, std::optional<unsigned>
 	}
 
 	if (!found) {
-		if (LevelMonsterTypeCount == MaxLvlMTypes)
-			LevelMonsterTypeCount--; // we are running out of monster types, so override last used monster type
-		id = AddMonsterType(uniqueIndex, PLACE_SCATTER);
-		CMonster &monsterType = LevelMonsterTypes[id];
-		InitMonsterGFX(monsterType);
+		if (Beastiary.LevelMonsterTypeCount == MaxLvlMTypes)
+			Beastiary.LevelMonsterTypeCount--; // we are running out of monster types, so override last used monster type
+		id = Beastiary.AddMonsterType(uniqueIndex, PLACE_SCATTER);
+		CMonster &monsterType = Beastiary.LevelMonsterTypes[id];
+		Beastiary.InitMonsterGFX(monsterType);
 		monsterType.corpseId = 1;
 	}
 
@@ -75,7 +75,7 @@ std::string DebugCmdSpawnUniqueMonster(std::string name, std::optional<unsigned>
 		if (!IsTileWalkable(pos))
 			return {};
 
-		Monster *monster = AddMonster(pos, myPlayer._pdir, id, true);
+		Monster *monster = MonsterManager.AddMonster(pos, myPlayer._pdir, id, true);
 		if (monster == nullptr)
 			return StrCat("Spawned ", spawnedMonster, " monsters. (Unable to spawn more)");
 		PrepareUniqueMonst(*monster, uniqueIndex, 0, 0, UniqueMonstersData[static_cast<size_t>(uniqueIndex)]);
@@ -120,8 +120,8 @@ std::string DebugCmdSpawnMonster(std::string name, std::optional<unsigned> count
 	size_t id = MaxLvlMTypes - 1;
 	bool found = false;
 
-	for (size_t i = 0; i < LevelMonsterTypeCount; i++) {
-		if (LevelMonsterTypes[i].type == mtype) {
+	for (size_t i = 0; i < Beastiary.LevelMonsterTypeCount; i++) {
+		if (Beastiary.LevelMonsterTypes[i].type == mtype) {
 			id = i;
 			found = true;
 			break;
@@ -129,11 +129,11 @@ std::string DebugCmdSpawnMonster(std::string name, std::optional<unsigned> count
 	}
 
 	if (!found) {
-		if (LevelMonsterTypeCount == MaxLvlMTypes)
-			LevelMonsterTypeCount--; // we are running out of monster types, so override last used monster type
-		id = AddMonsterType(static_cast<_monster_id>(mtype), PLACE_SCATTER);
-		CMonster &monsterType = LevelMonsterTypes[id];
-		InitMonsterGFX(monsterType);
+		if (Beastiary.LevelMonsterTypeCount == MaxLvlMTypes)
+			Beastiary.LevelMonsterTypeCount--; // we are running out of monster types, so override last used monster type
+		id = Beastiary.AddMonsterType(static_cast<_monster_id>(mtype), PLACE_SCATTER);
+		CMonster &monsterType = Beastiary.LevelMonsterTypes[id];
+		Beastiary.InitMonsterGFX(monsterType);
 		monsterType.corpseId = 1;
 	}
 

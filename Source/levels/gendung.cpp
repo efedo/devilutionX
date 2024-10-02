@@ -593,8 +593,8 @@ void LoadDungeonBase(const char *path, Point spawn, int floorId, int dirtId)
 	PlaceDunTiles(dunData.get(), { 0, 0 }, floorId);
 	LoadTransparency(dunData.get());
 
-	SetMapMonsters(dunData.get(), Point(0, 0).megaToWorld());
-	InitAllMonsterGFX();
+	MonsterManager.SetMapMonsters(dunData.get(), Point(0, 0).megaToWorld());
+	Beastiary.InitAllMonsterGFX();
 	SetMapObjects(dunData.get(), 0, 0);
 }
 
