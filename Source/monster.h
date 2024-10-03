@@ -221,6 +221,8 @@ struct Monster { // note: missing field _mAFNum
 
 	static constexpr uint8_t NoLeader = -1;
 
+	void InitMonster(Direction rd, size_t typeIndex, Point position);
+
 	void changeAnimationData(MonsterGraphic graphic, Direction desiredDirection); // Sets the current cell sprite to match the desired desired Direction and animation sequenc
 	void changeAnimationData(MonsterGraphic graphic); // Sets the current cell sprite to match the desired animation sequence
 	void checkStandAnimationIsLoaded(Direction dir); // Check if correct stand Animation loaded. Needed when direction changed.
@@ -315,6 +317,7 @@ struct Monster { // note: missing field _mAFNum
 	//private:
 	bool randomWalk(Direction md);
 	void updateRelations() const; // was M_UpdateRelations
+	void ClearMVars()
 };
 
 // Leaving outside class for now due to Ai function pointers
@@ -325,9 +328,9 @@ int encode_enemy(Monster &monster);
 void decode_enemy(Monster &monster, int enemyId);
 
 //extern size_t LevelMonsterTypeCount;
-extern Monster Monsters[MaxMonsters];
+extern Monster Monsters[MaxMonsters];  // eftodo: move to monster manager
 extern unsigned ActiveMonsters[MaxMonsters];
-extern size_t ActiveMonsterCount;
+//extern size_t ActiveMonsterCount;
 extern int MonsterKillCounts[NUM_MTYPES];
 extern bool sgbSaveSoundOn;
 

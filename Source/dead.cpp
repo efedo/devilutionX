@@ -13,6 +13,7 @@
 #include "misdat.h"
 #include "monster.h"
 #include "monster_beastiary.h"
+#include "monster_manager.h"
 
 namespace devilution {
 
@@ -76,7 +77,7 @@ void InitCorpses()
 
 	stonendx = nd;
 
-	for (size_t i = 0; i < ActiveMonsterCount; i++) {
+	for (size_t i = 0; i < MonsterManager.ActiveMonsterCount; i++) {
 		auto &monster = Monsters[ActiveMonsters[i]];
 		if (monster.isUnique()) {
 			InitDeadAnimationFromMonster(Corpses[nd], monster.type());
@@ -97,7 +98,7 @@ void AddCorpse(Point tilePosition, int8_t dv, Direction ddir)
 
 void MoveLightsToCorpses()
 {
-	for (size_t i = 0; i < ActiveMonsterCount; i++) {
+	for (size_t i = 0; i < MonsterManager.ActiveMonsterCount; i++) {
 		auto &monster = Monsters[ActiveMonsters[i]];
 		if (!monster.isUnique())
 			continue;

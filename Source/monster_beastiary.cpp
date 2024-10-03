@@ -1,4 +1,5 @@
 #include "monster_beastiary.h"
+#include "monster_manager.h"
 
 // eftodo: cut out uneccessary headers
 
@@ -151,6 +152,7 @@ bool IsMonsterAvailable(const MonsterData &monsterData)
 	return currlevel >= monsterData.minDunLvl && currlevel <= monsterData.maxDunLvl;
 }
 
+
 } // anonymous namespace
 
 size_t _beastiary::AddMonsterType(_monster_id type, placeflag placeflag)
@@ -181,7 +183,6 @@ size_t _beastiary::AddMonsterType(_monster_id type, placeflag placeflag)
 	return typeIndex;
 }
 
-	
 void _beastiary::GetLevelMTypes()
 {
 	AddMonsterType(MT_GOLEM, PLACE_SPECIAL);
@@ -401,7 +402,8 @@ void _beastiary::InitAllMonsterGFX()
 
 	if (totalUniqueBytes > 0) {
 		// we loaded new sprites, check if we need to update existing monsters
-		for (size_t i = 0; i < ActiveMonsterCount; i++) {
+		// eftodo: move to separate monster manager function
+		for (size_t i = 0; i < MonsterManager.ActiveMonsterCount; i++) {
 			Monster &monster = Monsters[ActiveMonsters[i]];
 			if (!monster.animInfo.sprites)
 				monster.syncAnim();
@@ -424,23 +426,6 @@ void _beastiary::FreeMonsters()
 			}
 		}
 	}
-}
-
-void _beastiary::InitLevelMonsters()
-{
-	Beastiary.LevelMonsterTypeCount = 0;
-	monstimgtot = 0;
-
-	for (CMonster &levelMonsterType : Beastiary.LevelMonsterTypes) {
-		levelMonsterType.placeFlags = 0;
-	}
-
-	ClrAllMonsters();
-	ActiveMonsterCount = 0;
-	totalmonsters = MaxMonsters;
-
-	std::iota(std::begin(ActiveMonsters), std::end(ActiveMonsters), 0u);
-	uniquetrans = 0;
 }
 
 size_t _beastiary::GetMonsterTypeIndex(_monster_id type)

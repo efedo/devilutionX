@@ -20,6 +20,7 @@
 #include "engine/point.hpp"
 #include "lighting.h"
 #include "monster.h"
+#include "monster_manager.h"
 #include "plrmsg.h"
 #include "utils/str_case.hpp"
 #include "utils/str_cat.hpp"
@@ -64,7 +65,7 @@ void PrintDebugMonster(const Monster &monster)
 
 	bool bActive = false;
 
-	for (size_t i = 0; i < ActiveMonsterCount; i++) {
+	for (size_t i = 0; i < MonsterManager.ActiveMonsterCount; i++) {
 		if (&Monsters[ActiveMonsters[i]] == &monster) {
 			bActive = true;
 			break;

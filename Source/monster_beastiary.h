@@ -31,6 +31,8 @@ struct _beastiary {
 	CMonster LevelMonsterTypes[MaxLvlMTypes];
 	size_t LevelMonsterTypeCount; // eftodo remove and replace with vector count
 
+	int monstimgtot;
+
 	size_t AddMonsterType(_monster_id type, placeflag placeflag);
 	inline size_t AddMonsterType(UniqueMonsterType uniqueType, placeflag placeflag)
 	{
@@ -45,8 +47,6 @@ struct _beastiary {
 	void GetLevelMTypes();
 
 	void FreeMonsters();
-
-	void InitLevelMonsters();
 
 	// private:
 	size_t GetMonsterTypeIndex(_monster_id type);
