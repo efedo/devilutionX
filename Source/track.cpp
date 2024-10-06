@@ -11,6 +11,7 @@
 #include "controls/plrctrls.h"
 #include "cursor.h"
 #include "engine/point.hpp"
+#include "monster_manager.h"
 #include "player.h"
 #include "stores.h"
 
@@ -38,7 +39,7 @@ void RepeatWalk(Player &player)
 void InvalidateTargets()
 {
 	if (pcursmonst != -1) {
-		const Monster &monster = Monsters[pcursmonst];
+		const Monster &monster = MonsterManager.Monsters[pcursmonst];
 		if (monster.isInvalid || monster.hitPoints >> 6 <= 0
 		    || (monster.flags & MFLAG_HIDDEN) != 0
 		    || !IsTileLit(monster.position.tile)) {

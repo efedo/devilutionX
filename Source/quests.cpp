@@ -24,6 +24,8 @@
 #include "minitext.h"
 #include "missiles.h"
 #include "monster.h"
+#include "monster_beastiary.h"
+#include "monster_manager.h"
 #include "options.h"
 #include "panels/ui_panels.hpp"
 #include "stores.h"
@@ -338,7 +340,7 @@ void CheckQuests()
 		if (setlvlnum == poisonWater._qslvl
 		    && poisonWater._qactive != QUEST_INIT
 		    && leveltype == poisonWater._qlvltype
-		    && ActiveMonsterCount == 4
+		    && MonsterManager.ActiveMonsterCount == 4
 		    && poisonWater._qactive != QUEST_DONE) {
 			poisonWater._qactive = QUEST_DONE;
 			poisonWater._qlog = true; // even if the player skips talking to Pepin completely they should at least notice the water being purified once they cleanse the level

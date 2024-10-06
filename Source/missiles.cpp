@@ -26,6 +26,8 @@
 #include "levels/trigs.h"
 #include "lighting.h"
 #include "monster.h"
+#include "monster_beastiary.h"
+#include "monster_manager.h"
 #include "spells.h"
 #include "utils/str_cat.hpp"
 
@@ -92,7 +94,7 @@ Monster *FindClosest(Point source, int rad)
 
 	if (monsterPosition) {
 		int mid = dMonster[monsterPosition->x][monsterPosition->y];
-		return &Monsters[mid - 1];
+		return &MonsterManager.Monsters[mid - 1];
 	}
 
 	return nullptr;
@@ -205,7 +207,7 @@ int ProjectileTrapDamage()
 
 bool MonsterMHit(const Player &player, int monsterId, int mindam, int maxdam, int dist, MissileID t, WorldTilePosition startPos, DamageType damageType, bool shift)
 {
-	Monster &monster = Monsters[monsterId];
+	Monster &monster = MonsterManager.Monsters[monsterId];
 
 	if (!monster.isPossibleToHit() || monster.isImmune(t, damageType))
 		return false;
@@ -411,13 +413,13 @@ void CheckMissileCol(Missile &missile, DamageType damageType, int minDamage, int
 
 	bool isMonsterHit = false;
 	int mid = dMonster[mx][my];
-	if (mid > 0 || (mid != 0 && Monsters[std::abs(mid) - 1].mode == MonsterMode::Petrified)) {
+	if (mid > 0 || (mid != 0 && MonsterManager.Monsters[std::abs(mid) - 1].mode == MonsterMode::Petrified)) {
 		mid = std::abs(mid) - 1;
 		if (missile.IsTrap()
 		    || (missile._micaster == TARGET_PLAYERS && (                                           // or was fired by a monster and
-		            Monsters[mid].isPlayerMinion() != Monsters[missile._misource].isPlayerMinion() //  the monsters are on opposing factions
-		            || (Monsters[missile._misource].flags & MFLAG_BERSERK) != 0                    //  or the attacker is berserked
-		            || (Monsters[mid].flags & MFLAG_BERSERK) != 0                                  //  or the target is berserked
+		            MonsterManager.Monsters[mid].isPlayerMinion() != MonsterManager.Monsters[missile._misource].isPlayerMinion() //  the monsters are on opposing factions
+		            || (MonsterManager.Monsters[missile._misource].flags & MFLAG_BERSERK) != 0                                   //  or the attacker is berserked
+		            || (MonsterManager.Monsters[mid].flags & MFLAG_BERSERK) != 0                                                 //  or the target is berserked
 		            ))) {
 			// then the missile can potentially hit this target
 			isMonsterHit = MonsterTrapHit(mid, minDamage, maxDamage, missile._midist, missile._mitype, damageType, isDamageShifted);
@@ -441,7 +443,7 @@ void CheckMissileCol(Missile &missile, DamageType damageType, int minDamage, int
 				if (player->getId() != missile._misource)
 					isPlayerHit = Plr2PlrMHit(Players[missile._misource], *player, minDamage, maxDamage, missile._midist, missile._mitype, damageType, isDamageShifted, &blocked);
 			} else {
-				Monster &monster = Monsters[missile._misource];
+				Monster &monster = MonsterManager.Monsters[missile._misource];
 				isPlayerHit = PlayerMHit(*player, &monster, missile._midist, minDamage, maxDamage, missile._mitype, damageType, isDamageShifted, DeathReason::MonsterOrTrap, &blocked);
 			}
 		} else {
@@ -672,7 +674,7 @@ bool GuardianTryFireAt(Missile &missile, Point target)
 	int mid = dMonster[target.x][target.y] - 1;
 	if (mid < 0)
 		return false;
-	const Monster &monster = Monsters[mid];
+	const Monster &monster = MonsterManager.Monsters[mid];
 	if (monster.isPlayerMinion())
 		return false;
 	if (monster.hitPoints >> 6 <= 0)
@@ -938,7 +940,7 @@ Direction16 GetDirection16(Point p1, Point p2)
 
 bool MonsterTrapHit(int monsterId, int mindam, int maxdam, int dist, MissileID t, DamageType damageType, bool shift)
 {
-	Monster &monster = Monsters[monsterId];
+	Monster &monster = MonsterManager.Monsters[monsterId];
 
 	if (!monster.isPossibleToHit() || monster.isImmune(t, damageType))
 		return false;
@@ -1230,7 +1232,7 @@ void AddBerserk(Missile &missile, AddMissileParameter &parameter)
 		    if (monsterId < 0)
 			    return false;
 
-		    const Monster &monster = Monsters[monsterId];
+		    const Monster &monster = MonsterManager.Monsters[monsterId];
 		    if (monster.isPlayerMinion())
 			    return false;
 		    if ((monster.flags & MFLAG_BERSERK) != 0)
@@ -1249,7 +1251,7 @@ void AddBerserk(Missile &missile, AddMissileParameter &parameter)
 	    parameter.dst, 0, 5);
 
 	if (targetMonsterPosition) {
-		Monster &monster = Monsters[std::abs(dMonster[targetMonsterPosition->x][targetMonsterPosition->y]) - 1];
+		Monster &monster = MonsterManager.Monsters[std::abs(dMonster[targetMonsterPosition->x][targetMonsterPosition->y]) - 1];
 		Player &player = *missile.sourcePlayer();
 		const int slvl = player.GetSpellLevel(SpellID::Berserk);
 		monster.flags |= MFLAG_BERSERK | MFLAG_GOLEM;
@@ -1931,7 +1933,7 @@ void AddLightning(Missile &missile, AddMissileParameter &parameter)
 	missile._miAnimFrame = RandomIntBetween(1, 8);
 
 	if (missile._micaster == TARGET_PLAYERS || missile.IsTrap()) {
-		if (missile.IsTrap() || Monsters[missile._misource].type().type == MT_FAMILIAR)
+		if (missile.IsTrap() || MonsterManager.Monsters[missile._misource].type().type == MT_FAMILIAR)
 			missile.duration = 8;
 		else
 			missile.duration = 10;
@@ -1944,7 +1946,7 @@ void AddLightning(Missile &missile, AddMissileParameter &parameter)
 void AddMissileExplosion(Missile &missile, AddMissileParameter &parameter)
 {
 	if (missile._micaster != TARGET_MONSTERS && missile._misource >= 0) {
-		switch (Monsters[missile._misource].type().type) {
+		switch (MonsterManager.Monsters[missile._misource].type().type) {
 		case MT_SUCCUBUS:
 			SetMissAnim(missile, MissileGraphicID::BloodStarExplosion);
 			break;
@@ -2176,7 +2178,7 @@ void InitMissileAnimationFromMonster(Missile &mis, Direction midir, const Monste
 
 void AddRhino(Missile &missile, AddMissileParameter &parameter)
 {
-	Monster &monster = Monsters[missile._misource];
+	Monster &monster = MonsterManager.Monsters[missile._misource];
 
 	MonsterGraphic graphic = MonsterGraphic::Walk;
 	if (IsAnyOf(monster.type().type, MT_HORNED, MT_MUDRUN, MT_FROSTC, MT_OBLORD)) {
@@ -2206,7 +2208,7 @@ void AddGenericMagicMissile(Missile &missile, AddMissileParameter &parameter)
 	missile.var2 = missile.position.start.y;
 	missile._mlid = AddLight(missile.position.start, 8);
 	if (missile._micaster != TARGET_MONSTERS && missile._misource > 0) {
-		Monster &monster = Monsters[missile._misource];
+		Monster &monster = MonsterManager.Monsters[missile._misource];
 		if (monster.type().type == MT_SUCCUBUS)
 			SetMissAnim(missile, MissileGraphicID::BloodStar);
 		if (monster.type().type == MT_SNOWWICH)
@@ -2243,7 +2245,7 @@ void AddAcid(Missile &missile, AddMissileParameter &parameter)
 	UpdateMissileVelocity(missile, parameter.dst, 16);
 	SetMissDir(missile, GetDirection16(missile.position.start, parameter.dst));
 	if (!gbIsHellfire || (missile.position.velocity.deltaX & 0xFFFF0000) != 0 || (missile.position.velocity.deltaY & 0xFFFF0000) != 0)
-		missile.duration = 5 * (Monsters[missile._misource].intelligence + 4);
+		missile.duration = 5 * (MonsterManager.Monsters[missile._misource].intelligence + 4);
 	else
 		missile.duration = 1;
 	missile._mlid = NO_LIGHT;
@@ -2269,7 +2271,7 @@ void AddAcidPuddle(Missile &missile, AddMissileParameter & /*parameter*/)
 {
 	missile._miLightFlag = true;
 	int monst = missile._misource;
-	missile.duration = GenerateRnd(15) + 40 * (Monsters[monst].intelligence + 1);
+	missile.duration = GenerateRnd(15) + 40 * (MonsterManager.Monsters[monst].intelligence + 1);
 	missile._miPreFlag = true;
 }
 
@@ -2286,7 +2288,7 @@ void AddStoneCurse(Missile &missile, AddMissileParameter &parameter)
 			    return false;
 		    }
 
-		    Monster &monster = Monsters[monsterId];
+		    Monster &monster = MonsterManager.Monsters[monsterId];
 
 		    if (IsAnyOf(monster.type().type, MT_GOLEM, MT_DIABLO, MT_NAKRUL)) {
 			    return false;
@@ -2307,7 +2309,7 @@ void AddStoneCurse(Missile &missile, AddMissileParameter &parameter)
 
 	// Petrify the targeted monster
 	int monsterId = std::abs(dMonster[targetMonsterPosition->x][targetMonsterPosition->y]) - 1;
-	Monster &monster = Monsters[monsterId];
+	Monster &monster = MonsterManager.Monsters[monsterId];
 
 	if (monster.mode == MonsterMode::Petrified) {
 		// Monster is already petrified and StoneCurse doesn't stack
@@ -2335,7 +2337,7 @@ void AddGolem(Missile &missile, AddMissileParameter &parameter)
 
 	int playerId = missile._misource;
 	Player &player = Players[playerId];
-	Monster &golem = Monsters[playerId];
+	Monster &golem = MonsterManager.Monsters[playerId];
 
 	if (golem.position.tile != GolemHoldingCell && &player == MyPlayer)
 		KillMyGolem();
@@ -2587,7 +2589,7 @@ void AddInferno(Missile &missile, AddMissileParameter &parameter)
 		int i = GenerateRnd(Players[missile._misource].getCharacterLevel()) + GenerateRnd(2);
 		missile._midam = 8 * i + 16 + ((8 * i + 16) / 2);
 	} else {
-		Monster &monster = Monsters[missile._misource];
+		Monster &monster = MonsterManager.Monsters[missile._misource];
 		missile._midam = RandomIntBetween(monster.minDamage, monster.maxDamage);
 	}
 }
@@ -2735,7 +2737,7 @@ Missile *AddMissile(WorldTilePosition src, WorldTilePosition dst, Direction midi
 	missile.lastCollisionTargetHash = 0;
 
 	if (!missile.IsTrap() && micaster == TARGET_PLAYERS) {
-		Monster &monster = Monsters[id];
+		Monster &monster = MonsterManager.Monsters[id];
 		if (monster.isUnique()) {
 			missile._miUniqTrans = monster.uniqTrans + 1;
 		}
@@ -2781,7 +2783,7 @@ void ProcessElementalArrow(Missile &missile)
 				maxd = player._pIMaxDam;
 			} else {
 				// BUGFIX: damage of missile should be encoded in missile struct; monster can be dead before missile arrives.
-				Monster &monster = Monsters[p];
+				Monster &monster = MonsterManager.Monsters[p];
 				mind = monster.minDamage;
 				maxd = monster.maxDamage;
 			}
@@ -3009,7 +3011,7 @@ void ProcessFireball(Missile &missile)
 		int maxDam = missile._midam;
 
 		if (missile._micaster != TARGET_MONSTERS) {
-			Monster &monster = Monsters[missile._misource];
+			Monster &monster = MonsterManager.Monsters[missile._misource];
 			minDam = monster.minDamage;
 			maxDam = monster.maxDamage;
 		}
@@ -3095,7 +3097,7 @@ void ProcessRune(Missile &missile)
 	int mid = dMonster[position.x][position.y];
 	Player *player = PlayerAtPosition(position);
 	if (mid != 0 || player != nullptr) {
-		Point targetPosition = mid != 0 ? Monsters[std::abs(mid) - 1].position.tile : player->position.tile;
+		Point targetPosition = mid != 0 ? MonsterManager.Monsters[std::abs(mid) - 1].position.tile : player->position.tile;
 		Direction dir = GetDirection(position, targetPosition);
 
 		missile._miDelFlag = true;
@@ -3264,7 +3266,7 @@ void ProcessLightningControl(Missile &missile)
 		// BUGFIX: damage of missile should be encoded in missile struct; player can be dead/have left the game before missile arrives.
 		dam = (GenerateRnd(2) + GenerateRnd(Players[missile._misource].getCharacterLevel()) + 2) << 6;
 	} else {
-		Monster &monster = Monsters[missile._misource];
+		Monster &monster = MonsterManager.Monsters[missile._misource];
 		dam = 2 * RandomIntBetween(monster.minDamage, monster.maxDamage);
 	}
 
@@ -3568,7 +3570,7 @@ void ProcessAcidSplate(Missile &missile)
 	if (missile.duration == 0) {
 		missile._miDelFlag = true;
 		int monst = missile._misource;
-		int dam = (Monsters[monst].data().level >= 2 ? 2 : 1);
+		int dam = (MonsterManager.Monsters[monst].data().level >= 2 ? 2 : 1);
 		AddMissile(missile.position.tile, { 0, 0 }, Direction::South, MissileID::AcidPuddle, TARGET_PLAYERS, monst, dam, missile._mispllvl);
 	} else {
 		PutMissile(missile);
@@ -3615,7 +3617,7 @@ void ProcessTeleport(Missile &missile)
 void ProcessStoneCurse(Missile &missile)
 {
 	missile.duration--;
-	Monster &monster = Monsters[missile.var2];
+	Monster &monster = MonsterManager.Monsters[missile.var2];
 	if (monster.hitPoints == 0 && missile._miAnimType != MissileGraphicID::StoneCurseShatter) {
 		missile._mimfnum = 0;
 		missile._miDrawFlag = true;
@@ -3655,7 +3657,7 @@ void ProcessApocalypseBoom(Missile &missile)
 void ProcessRhino(Missile &missile)
 {
 	int monst = missile._misource;
-	Monster &monster = Monsters[monst];
+	Monster &monster = MonsterManager.Monsters[monst];
 	if (monster.mode != MonsterMode::Charge) {
 		missile._miDelFlag = true;
 		return;
@@ -3779,7 +3781,7 @@ void ProcessApocalypse(Missile &missile)
 			int mid = dMonster[k][j] - 1;
 			if (mid < 0)
 				continue;
-			if (Monsters[mid].isPlayerMinion())
+			if (MonsterManager.Monsters[mid].isPlayerMinion())
 				continue;
 			if (TileHasAny(PointOf { k, j }, TileProperties::Solid))
 				continue;
@@ -4189,7 +4191,7 @@ void SetUpMissileAnimationData()
 			continue;
 		}
 
-		const CMonster &mon = Monsters[missile._misource].type();
+		const CMonster &mon = MonsterManager.Monsters[missile._misource].type();
 
 		MonsterGraphic graphic;
 		if (IsAnyOf(mon.type, MT_HORNED, MT_MUDRUN, MT_FROSTC, MT_OBLORD)) {

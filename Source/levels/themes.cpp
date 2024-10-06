@@ -15,6 +15,8 @@
 #include "items.h"
 #include "levels/trigs.h"
 #include "monster.h"
+#include "monster_beastiary.h"
+#include "monster_manager.h"
 #include "objects.h"
 #include "quests.h"
 #include "utils/algorithm/container.hpp"

@@ -285,7 +285,7 @@ void DrawMissilePrivate(const Surface &out, const Missile &missile, Point target
 	const Point missileRenderPosition { targetBufferPosition + missile.position.offsetForRendering - Displacement { missile._miAnimWidth2, 0 } };
 	const ClxSprite sprite = (*missile._miAnimData)[missile._miAnimFrame - 1];
 	if (missile._miUniqTrans != 0) {
-		ClxDrawTRN(out, missileRenderPosition, sprite, Monsters[missile._misource].uniqueMonsterTRN.get());
+		ClxDrawTRN(out, missileRenderPosition, sprite, MonsterManager.Monsters[missile._misource].uniqueMonsterTRN.get());
 	} else if (missile._miLightFlag) {
 		ClxDrawLight(out, missileRenderPosition, sprite, lightTableIndex);
 	} else {
@@ -654,7 +654,7 @@ void DrawMonsterHelper(const Surface &out, Point tilePosition, Point targetBuffe
 		return;
 	}
 
-	const auto &monster = Monsters[mi];
+	const auto &monster = MonsterManager.Monsters[mi];
 	if ((monster.flags & MFLAG_HIDDEN) != 0) {
 		return;
 	}
@@ -700,7 +700,7 @@ void DrawDungeon(const Surface &out, Point tilePosition, Point targetBufferPosit
 		const Point position { targetBufferPosition.x - CalculateWidth2(corpse.width), targetBufferPosition.y };
 		const ClxSprite sprite = corpse.spritesForDirection(static_cast<Direction>((bDead >> 5) & 7))[corpse.frame];
 		if (corpse.translationPaletteIndex != 0) {
-			const uint8_t *trn = Monsters[corpse.translationPaletteIndex - 1].uniqueMonsterTRN.get();
+			const uint8_t *trn = MonsterManager.Monsters[corpse.translationPaletteIndex - 1].uniqueMonsterTRN.get();
 			ClxDrawTRN(out, position, sprite, trn);
 		} else {
 			ClxDrawLight(out, position, sprite, lightTableIndex);

@@ -404,7 +404,7 @@ void _beastiary::InitAllMonsterGFX()
 		// we loaded new sprites, check if we need to update existing monsters
 		// eftodo: move to separate monster manager function
 		for (size_t i = 0; i < MonsterManager.ActiveMonsterCount; i++) {
-			Monster &monster = Monsters[ActiveMonsters[i]];
+			Monster &monster = MonsterManager.Monsters[MonsterManager.ActiveMonsters[i]];
 			if (!monster.animInfo.sprites)
 				monster.syncAnim();
 		}

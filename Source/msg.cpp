@@ -31,6 +31,8 @@
 #include "levels/trigs.h"
 #include "lighting.h"
 #include "missiles.h"
+#include "monster_manager.h"
+#include "monster_beastiary.h"
 #include "nthread.h"
 #include "objects.h"
 #include "options.h"
@@ -756,9 +758,9 @@ void DeltaLeaveSync(uint8_t bLevel)
 
 	DLevel &deltaLevel = GetDeltaLevel(bLevel);
 
-	for (size_t i = 0; i < ActiveMonsterCount; i++) {
-		const unsigned ma = ActiveMonsters[i];
-		Monster &monster = Monsters[ma];
+	for (size_t i = 0; i < MonsterManager.ActiveMonsterCount; i++) {
+		const unsigned ma = MonsterManager.ActiveMonsters[i];
+		Monster &monster = MonsterManager.Monsters[ma];
 		if (monster.hitPoints == 0)
 			continue;
 		DMonsterStr &delta = deltaLevel.monster[ma];
@@ -1554,7 +1556,7 @@ size_t OnAttackMonster(const TCmd *pCmd, Player &player)
 	const uint16_t monsterIdx = SDL_SwapLE16(message.wParam1);
 
 	if (gbBufferMsgs != 1 && player.isOnActiveLevel() && monsterIdx < MaxMonsters) {
-		Point position = Monsters[monsterIdx].position.future;
+		Point position = MonsterManager.Monsters[monsterIdx].position.future;
 		if (player.position.tile.WalkingDistance(position) > 1)
 			MakePlrPath(player, position, false);
 		player.destAction = ACTION_ATTACKMON;
@@ -1658,7 +1660,7 @@ size_t OnKnockback(const TCmd *pCmd, Player &player)
 	const uint16_t monsterIdx = SDL_SwapLE16(message.wParam1);
 
 	if (gbBufferMsgs != 1 && player.isOnActiveLevel() && monsterIdx < MaxMonsters) {
-		Monster &monster = Monsters[monsterIdx];
+		Monster &monster = MonsterManager.Monsters[monsterIdx];
 		monster.getKnockback(player.position.tile);
 		monster.startHit(player, 0);
 	}
@@ -1757,7 +1759,7 @@ size_t OnMonstDeath(const TCmd *pCmd, Player &player)
 
 	if (gbBufferMsgs != 1) {
 		if (&player != MyPlayer && InDungeonBounds(position) && monsterIdx < MaxMonsters) {
-			Monster &monster = Monsters[monsterIdx];
+			Monster &monster = MonsterManager.Monsters[monsterIdx];
 			if (player.isOnActiveLevel())
 				monster.syncStartKill(position, player);
 			delta_kill_monster(monster, position, player);
@@ -1776,7 +1778,7 @@ size_t OnKillGolem(const TCmd *pCmd, Player &player)
 
 	if (gbBufferMsgs != 1) {
 		if (&player != MyPlayer && InDungeonBounds(position)) {
-			Monster &monster = Monsters[player.getId()];
+			Monster &monster = MonsterManager.Monsters[player.getId()];
 			if (player.isOnActiveLevel())
 				monster.syncStartKill(position, player);
 			delta_kill_monster(monster, position, player); // BUGFIX: should be p->wParam1, plrlevel will be incorrect if golem is killed because player changed levels
@@ -1821,7 +1823,7 @@ size_t OnMonstDamage(const TCmd *pCmd, Player &player)
 	if (gbBufferMsgs != 1) {
 		if (&player != MyPlayer) {
 			if (player.isOnActiveLevel() && monsterIdx < MaxMonsters) {
-				Monster &monster = Monsters[monsterIdx];
+				Monster &monster = MonsterManager.Monsters[monsterIdx];
 				monster.tag(player);
 				if (monster.hitPoints > 0) {
 					monster.hitPoints -= SDL_SwapLE32(message.dwDam);
@@ -2703,7 +2705,7 @@ void DeltaLoadLevel()
 			if (deltaLevel.monster[i].position.x == 0xFF)
 				continue;
 
-			Monster &monster = Monsters[i];
+			Monster &monster = MonsterManager.Monsters[i];
 			monster.clearSquares();
 			{
 				const WorldTilePosition position = deltaLevel.monster[i].position;

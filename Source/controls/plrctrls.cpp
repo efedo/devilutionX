@@ -30,6 +30,7 @@
 #include "levels/trigs.h"
 #include "minitext.h"
 #include "missiles.h"
+#include "monster_manager.h"
 #include "panels/spell_icons.hpp"
 #include "panels/spell_list.hpp"
 #include "panels/ui_panels.hpp"
@@ -264,9 +265,9 @@ void FindRangedTarget()
 	int distance = 0;
 	bool canTalk = false;
 
-	for (size_t i = 0; i < ActiveMonsterCount; i++) {
-		int mi = ActiveMonsters[i];
-		const Monster &monster = Monsters[mi];
+	for (size_t i = 0; i < MonsterManager.ActiveMonsterCount; i++) {
+		int mi = MonsterManager.ActiveMonsters[i];
+		const Monster &monster = MonsterManager.Monsters[mi];
 
 		if (!CanTargetMonster(monster))
 			continue;
@@ -332,7 +333,7 @@ void FindMeleeTarget()
 
 				if (dMonster[dx][dy] != 0) {
 					const int mi = std::abs(dMonster[dx][dy]) - 1;
-					const Monster &monster = Monsters[mi];
+					const Monster &monster = MonsterManager.Monsters[mi];
 					if (CanTargetMonster(monster)) {
 						const bool newCanTalk = monster.canTalkTo();
 						if (pcursmonst != -1 && !canTalk && newCanTalk)
@@ -517,7 +518,7 @@ void Interact()
 
 		Point position = myPlayer.position.tile + pdir;
 		if (pcursmonst != -1 && !motion) {
-			position = Monsters[pcursmonst].position.tile;
+			position = MonsterManager.Monsters[pcursmonst].position.tile;
 		}
 
 		NetSendCmdLoc(MyPlayerId, true, myPlayer.UsesRangedWeapon() ? CMD_RATTACKXY : CMD_SATTACKXY, position);
@@ -526,7 +527,7 @@ void Interact()
 	}
 
 	if (pcursmonst != -1) {
-		if (!myPlayer.UsesRangedWeapon() || Monsters[pcursmonst].canTalkTo()) {
+		if (!myPlayer.UsesRangedWeapon() || MonsterManager.Monsters[pcursmonst].canTalkTo()) {
 			NetSendCmdParam1(true, CMD_ATTACKID, pcursmonst);
 		} else {
 			NetSendCmdParam1(true, CMD_RATTACKID, pcursmonst);
@@ -1910,7 +1911,7 @@ bool SpellHasActorTarget()
 		return false;
 
 	if (IsWallSpell(spl) && pcursmonst != -1) {
-		cursPosition = Monsters[pcursmonst].position.tile;
+		cursPosition = MonsterManager.Monsters[pcursmonst].position.tile;
 	}
 
 	return PlayerUnderCursor != nullptr || pcursmonst != -1;

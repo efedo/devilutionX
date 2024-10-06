@@ -66,7 +66,7 @@ void PrintDebugMonster(const Monster &monster)
 	bool bActive = false;
 
 	for (size_t i = 0; i < MonsterManager.ActiveMonsterCount; i++) {
-		if (&Monsters[ActiveMonsters[i]] == &monster) {
+		if (&MonsterManager.Monsters[MonsterManager.ActiveMonsters[i]] == &monster) {
 			bActive = true;
 			break;
 		}
@@ -96,7 +96,7 @@ void GetDebugMonster()
 	if (monsterIndex == -1)
 		monsterIndex = DebugMonsterId;
 
-	PrintDebugMonster(Monsters[monsterIndex]);
+	PrintDebugMonster(MonsterManager.Monsters[monsterIndex]);
 }
 
 void NextDebugMonster()
@@ -274,7 +274,7 @@ bool ShouldHighlightDebugAutomapTile(Point position)
 
 	if (SearchMonsters.size() > 0 && dMonster[position.x][position.y] != 0) {
 		const int mi = std::abs(dMonster[position.x][position.y]) - 1;
-		const Monster &monster = Monsters[mi];
+		const Monster &monster = MonsterManager.Monsters[mi];
 		if (matchesSearched(monster.name(), SearchMonsters))
 			return true;
 	}

@@ -36,6 +36,8 @@ struct CMonster;
 constexpr size_t MaxMonsters = 200;
 constexpr size_t MaxLvlMTypes = 24;
 
+extern const std::array<_monster_id, 12> SkeletonTypes;
+
 enum monster_flag : uint16_t {
 	// clang-format off
 	MFLAG_HIDDEN          = 1 << 0,
@@ -240,11 +242,7 @@ struct Monster { // note: missing field _mAFNum
 
 	[[nodiscard]] Monster *getLeader() const;
 	void setLeader(const Monster *leader);
-
-	[[nodiscard]] bool hasLeashedMinions() const
-	{
-		return isUnique() && UniqueMonstersData[static_cast<size_t>(uniqueType)].monsterPack == UniqueMonsterPack::Leashed;
-	}
+	[[nodiscard]] bool hasLeashedMinions() const;
 
 	[[nodiscard]] unsigned distanceToEnemy() const; // Calculates the distance in tiles between this monster and its current target
 	[[nodiscard]] bool isWalking() const; // Is the monster currently walking?
@@ -255,36 +253,14 @@ struct Monster { // note: missing field _mAFNum
 	bool isPossibleToHit() const;
 	void tag(const Player &tagger);
 
-	[[nodiscard]] bool isUnique() const
-	{
-		return uniqueType != UniqueMonsterType::None;
-	}
+	[[nodiscard]] bool isUnique() const;
 
 	bool tryLiftGargoyle();
 
-	/**
-	 * @brief Gets the visual/shown monster mode.
-	 *
-	 * When a monster is petrified it's monster mode is changed to MonsterMode::Petrified.
-	 * But for graphics and rendering we show the old/real mode.
-	 */
-	[[nodiscard]] MonsterMode getVisualMonsterMode() const;
+	[[nodiscard]] MonsterMode getVisualMonsterMode() const; // Gets the visual/shown monster mode.
+	[[nodiscard]] Displacement getRenderingOffset(const ClxSprite sprite) const;
 
-	[[nodiscard]] Displacement getRenderingOffset(const ClxSprite sprite) const
-	{
-		Displacement offset = { -CalculateWidth2(sprite.width()), 0 };
-		if (isWalking())
-			offset += GetOffsetForWalking(animInfo, direction);
-		return offset;
-	}
-
-	/**
-	 * @brief Sets a tile/dMonster to be occupied by the monster
-	 * @param position tile to update
-	 * @param isMoving specifies whether the monster is moving or not (true/moving results in a negative index in dMonster)
-	 */
-	void occupyTile(Point position, bool isMoving) const;
-
+	void occupyTile(Point position, bool isMoving) const; // Sets a tile/dMonster to be occupied by the monster
 	void applyDamage(DamageType damageType, int damage); // was ApplyMonsterDamage
 	bool isTalker() const; // was M_Talker
 	void startStand(Direction md = Direction::NoDirection); // was M_StartStand
@@ -317,7 +293,7 @@ struct Monster { // note: missing field _mAFNum
 	//private:
 	bool randomWalk(Direction md);
 	void updateRelations() const; // was M_UpdateRelations
-	void ClearMVars()
+	void ClearMVars();
 };
 
 // Leaving outside class for now due to Ai function pointers
@@ -328,9 +304,9 @@ int encode_enemy(Monster &monster);
 void decode_enemy(Monster &monster, int enemyId);
 
 //extern size_t LevelMonsterTypeCount;
-extern Monster Monsters[MaxMonsters];  // eftodo: move to monster manager
-extern unsigned ActiveMonsters[MaxMonsters];
-//extern size_t ActiveMonsterCount;
+//extern Monster Monsters[MaxMonsters];  // eftodo: move to monster manager
+//extern unsigned ActiveMonsters[MaxMonsters];
+//extern size_t MonsterManager.ActiveMonsterCount;
 extern int MonsterKillCounts[NUM_MTYPES];
 extern bool sgbSaveSoundOn;
 
@@ -378,7 +354,6 @@ void MissToMonst(Missile &missile, Point position);
 
 Monster *FindMonsterAtPosition(Point position, bool ignoreMovingMonsters = false);
 Monster *FindUniqueMonster(UniqueMonsterType monsterType);
-
 
 bool IsSkel(_monster_id mt);
 bool IsGoat(_monster_id mt);

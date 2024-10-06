@@ -32,6 +32,7 @@
 #include "lighting.h"
 #include "minitext.h"
 #include "missiles.h"
+#include "monster_beastiary.h"
 #include "options.h"
 #include "panels/info_box.hpp"
 #include "panels/ui_panels.hpp"

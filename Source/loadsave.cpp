@@ -29,6 +29,7 @@
 #include "menu.h"
 #include "missiles.h"
 #include "monster.h"
+#include "monster_manager.h"
 #include "mpq/mpq_common.hpp"
 #include "pfile.h"
 #include "playerdat.hpp"
@@ -722,8 +723,9 @@ void SyncPackSize(Monster &leader)
 
 	leader.packSize = 0;
 
-	for (size_t i = 0; i < ActiveMonsterCount; i++) {
-		Monster &minion = Monsters[ActiveMonsters[i]];
+	// eftodo
+	for (size_t i = 0; i < MonsterManager.ActiveMonsterCount; i++) {
+		Monster &minion = MonsterManager.Monsters[MonsterManager.ActiveMonsters[i]];
 		if (minion.leaderRelation == LeaderRelation::Leashed && minion.getLeader() == &leader)
 			leader.packSize++;
 	}
@@ -1852,18 +1854,18 @@ void SaveLevel(SaveWriter &saveWriter, LevelConversionData *levelConversionData)
 		}
 	}
 
-	file.WriteBE(static_cast<int32_t>(ActiveMonsterCount));
+	file.WriteBE(static_cast<int32_t>(MonsterManager.ActiveMonsterCount));
 	file.WriteBE<int32_t>(ActiveItemCount);
 	file.WriteBE<int32_t>(ActiveObjectCount);
 
 	if (leveltype != DTYPE_TOWN) {
-		for (unsigned monsterId : ActiveMonsters)
+		for (unsigned monsterId : MonsterManager.ActiveMonsters) // EFtodo: probably need to maintain fixed size, use maxmonsters
 			file.WriteBE<uint32_t>(monsterId);
-		for (size_t i = 0; i < ActiveMonsterCount; i++) {
+		for (size_t i = 0; i < MonsterManager.ActiveMonsterCount; i++) {
 			MonsterConversionData *monsterConversionData = nullptr;
 			if (levelConversionData != nullptr)
-				monsterConversionData = &levelConversionData->monsterConversionData[ActiveMonsters[i]];
-			SaveMonster(&file, Monsters[ActiveMonsters[i]], monsterConversionData);
+				monsterConversionData = &levelConversionData->monsterConversionData[MonsterManager.ActiveMonsters[i]];
+			SaveMonster(&file, MonsterManager.Monsters[MonsterManager.ActiveMonsters[i]], monsterConversionData);
 		}
 		for (int objectId : ActiveObjects)
 			file.WriteLE<int8_t>(objectId);
@@ -1930,25 +1932,25 @@ void LoadLevel(LevelConversionData *levelConversionData)
 		MoveLightsToCorpses();
 	}
 
-	ActiveMonsterCount = file.NextBE<int32_t>();
+	MonsterManager.ActiveMonsterCount = file.NextBE<int32_t>();
 	auto savedItemCount = file.NextBE<uint32_t>();
 	ActiveObjectCount = file.NextBE<int32_t>();
 
 	if (leveltype != DTYPE_TOWN) {
-		for (unsigned &monsterId : ActiveMonsters)
+		for (unsigned &monsterId : MonsterManager.ActiveMonsters) // EFtodo: probably need to maintain fixed size, use maxmonsters
 			monsterId = file.NextBE<uint32_t>();
-		for (size_t i = 0; i < ActiveMonsterCount; i++) {
-			Monster &monster = Monsters[ActiveMonsters[i]];
+		for (size_t i = 0; i < MonsterManager.ActiveMonsterCount; i++) {
+			Monster &monster = MonsterManager.Monsters[MonsterManager.ActiveMonsters[i]];
 			MonsterConversionData *monsterConversionData = nullptr;
 			if (levelConversionData != nullptr)
-				monsterConversionData = &levelConversionData->monsterConversionData[ActiveMonsters[i]];
+				monsterConversionData = &levelConversionData->monsterConversionData[MonsterManager.ActiveMonsters[i]];
 			LoadMonster(&file, monster, monsterConversionData);
 			if (monster.isUnique() && monster.lightId != NO_LIGHT)
 				Lights[monster.lightId].isInvalid = false;
 		}
 		if (!gbSkipSync) {
-			for (size_t i = 0; i < ActiveMonsterCount; i++)
-				Monsters[ActiveMonsters[i]].syncAnim();
+			for (size_t i = 0; i < MonsterManager.ActiveMonsterCount; i++)
+				MonsterManager.Monsters[MonsterManager.ActiveMonsters[i]].syncAnim();
 		}
 		for (int &objectId : ActiveObjects)
 			objectId = file.NextLE<int8_t>();
@@ -2420,7 +2422,7 @@ void LoadGame(bool firstflag)
 	SyncPlrAnim(myPlayer);
 
 	ViewPosition = { viewX, viewY };
-	ActiveMonsterCount = tmpNummonsters;
+	MonsterManager.ActiveMonsterCount = tmpNummonsters;
 	ActiveObjectCount = tmpNobjects;
 
 	for (int &monstkill : MonsterKillCounts)
@@ -2429,12 +2431,12 @@ void LoadGame(bool firstflag)
 	// skip ahead for vanilla save compatibility (Related to bugfix where MonsterKillCounts[MaxMonsters] was changed to MonsterKillCounts[NUM_MTYPES]
 	file.Skip(4 * (MaxMonsters - NUM_MTYPES));
 	if (leveltype != DTYPE_TOWN) {
-		for (unsigned &monsterId : ActiveMonsters)
+		for (unsigned &monsterId : MonsterManager.ActiveMonsters)
 			monsterId = file.NextBE<uint32_t>();
-		for (size_t i = 0; i < ActiveMonsterCount; i++)
-			LoadMonster(&file, Monsters[ActiveMonsters[i]]);
-		for (size_t i = 0; i < ActiveMonsterCount; i++)
-			SyncPackSize(Monsters[ActiveMonsters[i]]);
+		for (size_t i = 0; i < MonsterManager.ActiveMonsterCount; i++)
+			LoadMonster(&file, MonsterManager.Monsters[MonsterManager.ActiveMonsters[i]]);
+		for (size_t i = 0; i < MonsterManager.ActiveMonsterCount; i++)
+			SyncPackSize(MonsterManager.Monsters[MonsterManager.ActiveMonsters[i]]);
 		// Skip ActiveMissiles
 		file.Skip<int8_t>(MaxMissilesForSaveGame);
 		// Skip AvailableMissiles
@@ -2443,8 +2445,8 @@ void LoadGame(bool firstflag)
 			LoadMissile(&file);
 		// For petrified monsters, the data in missile.var1 must be used to
 		// load the appropriate animation data for the monster in missile.var2
-		for (size_t i = 0; i < ActiveMonsterCount; i++)
-			Monsters[ActiveMonsters[i]].syncAnim();
+		for (size_t i = 0; i < MonsterManager.ActiveMonsterCount; i++)
+			MonsterManager.Monsters[MonsterManager.ActiveMonsters[i]].syncAnim();
 		for (int &objectId : ActiveObjects)
 			objectId = file.NextLE<int8_t>();
 		for (int &objectId : AvailableObjects)
@@ -2667,7 +2669,7 @@ void SaveGameData(SaveWriter &saveWriter)
 	file.WriteBE<int32_t>(ViewPosition.y);
 	file.WriteLE<uint8_t>(invflag ? 1 : 0);
 	file.WriteLE<uint8_t>(CharFlag ? 1 : 0);
-	file.WriteBE(static_cast<int32_t>(ActiveMonsterCount));
+	file.WriteBE(static_cast<int32_t>(MonsterManager.ActiveMonsterCount));
 	file.WriteBE<int32_t>(ActiveItemCount);
 	// ActiveMissileCount will be a value from 0-125 (for vanilla compatibility). Writing an unsigned value here to avoid
 	// warnings about casting from unsigned to signed, but there's no sign extension issues when reading this as a signed
@@ -2693,10 +2695,10 @@ void SaveGameData(SaveWriter &saveWriter)
 	file.Skip(4 * (MaxMonsters - NUM_MTYPES));
 
 	if (leveltype != DTYPE_TOWN) {
-		for (unsigned monsterId : ActiveMonsters)
+		for (unsigned monsterId : MonsterManager.ActiveMonsters)
 			file.WriteBE<uint32_t>(monsterId);
-		for (size_t i = 0; i < ActiveMonsterCount; i++)
-			SaveMonster(&file, Monsters[ActiveMonsters[i]]);
+		for (size_t i = 0; i < MonsterManager.ActiveMonsterCount; i++)
+			SaveMonster(&file, MonsterManager.Monsters[MonsterManager.ActiveMonsters[i]]);
 		// Write ActiveMissiles
 		for (uint8_t activeMissile = 0; activeMissile < MaxMissilesForSaveGame; activeMissile++)
 			file.WriteLE<uint8_t>(activeMissile);

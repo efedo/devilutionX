@@ -78,10 +78,10 @@ void InitCorpses()
 	stonendx = nd;
 
 	for (size_t i = 0; i < MonsterManager.ActiveMonsterCount; i++) {
-		auto &monster = Monsters[ActiveMonsters[i]];
+		auto &monster = MonsterManager.Monsters[MonsterManager.ActiveMonsters[i]];
 		if (monster.isUnique()) {
 			InitDeadAnimationFromMonster(Corpses[nd], monster.type());
-			Corpses[nd].translationPaletteIndex = ActiveMonsters[i] + 1;
+			Corpses[nd].translationPaletteIndex = MonsterManager.ActiveMonsters[i] + 1;
 			nd++;
 
 			monster.corpseId = nd;
@@ -99,7 +99,7 @@ void AddCorpse(Point tilePosition, int8_t dv, Direction ddir)
 void MoveLightsToCorpses()
 {
 	for (size_t i = 0; i < MonsterManager.ActiveMonsterCount; i++) {
-		auto &monster = Monsters[ActiveMonsters[i]];
+		auto &monster = MonsterManager.Monsters[MonsterManager.ActiveMonsters[i]];
 		if (!monster.isUnique())
 			continue;
 		MoveLightToCorpse(monster);

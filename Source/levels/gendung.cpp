@@ -21,6 +21,8 @@
 #include "levels/reencode_dun_cels.hpp"
 #include "levels/town.h"
 #include "lighting.h"
+#include "monster_beastiary.h"
+#include "monster_manager.h"
 #include "options.h"
 #include "utils/bitset2d.hpp"
 #include "utils/log.hpp"

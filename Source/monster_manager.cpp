@@ -168,7 +168,7 @@ namespace devilution {
 			    UberDiabloMonsterIndex = -1;
 			    const size_t typeIndex = Beastiary.GetMonsterTypeIndex(MT_NAKRUL);
 			    if (typeIndex < Beastiary.LevelMonsterTypeCount) {
-				    for (size_t i = 0; i < ActiveMonsterCount; i++) {
+				    for (size_t i = 0; i < MonsterManager.ActiveMonsterCount; i++) {
 					    Monster &monster = Monsters[i];
 					    if (monster.isUnique() || monster.levelType == typeIndex) {
 						    UberDiabloMonsterIndex = static_cast<int>(i);
@@ -215,7 +215,7 @@ namespace devilution {
 	    }
 
 	    ClrAllMonsters();
-	    ActiveMonsterCount = 0;
+	    MonsterManager.ActiveMonsterCount = 0;
 	    totalmonsters = MaxMonsters;
 
 	    std::iota(std::begin(ActiveMonsters), std::end(ActiveMonsters), 0u);
@@ -259,7 +259,7 @@ namespace devilution {
 		    AddUnLight(monster.lightId);
 	    }
 
-	    ActiveMonsterCount--;
+	    MonsterManager.ActiveMonsterCount--;
 	    std::swap(ActiveMonsters[activeIndex], ActiveMonsters[ActiveMonsterCount]); // This ensures alive monsters are before ActiveMonsterCount in the array and any deleted monster after
     }
 
@@ -346,7 +346,7 @@ namespace devilution {
 	    }
 	    const size_t typeIndex = Beastiary.GetMonsterTypeIndex(uniqueMonsterData.mtype);
 	    PlaceMonster(ActiveMonsterCount, typeIndex, position);
-	    ActiveMonsterCount++;
+	    MonsterManager.ActiveMonsterCount++;
 
 	    PrepareUniqueMonst(monster, uniqindex, minionType, bosspacksize, uniqueMonsterData);
     }
@@ -382,7 +382,7 @@ void _monsterManager::PlaceUniqueMonsters()
 	void _monsterManager::PlaceMonster(size_t i, size_t typeIndex, Point position)
     {
 	    if (Beastiary.LevelMonsterTypes[typeIndex].type == MT_NAKRUL) {
-		    for (size_t j = 0; j < ActiveMonsterCount; j++) {
+		    for (size_t j = 0; j < MonsterManager.ActiveMonsterCount; j++) {
 			    if (Monsters[j].levelType == typeIndex) {
 				    return;
 			    }
@@ -392,16 +392,16 @@ void _monsterManager::PlaceUniqueMonsters()
 	    monster.occupyTile(position, false);
 
 	    auto rd = static_cast<Direction>(GenerateRnd(8));
-	    InitMonster(monster, rd, typeIndex, position);
+	    monster.InitMonster(rd, typeIndex, position);
     }
 
-    void _monsterManager::PlaceGroup(size_t typeIndex, size_t num, Monster *leader = nullptr, bool leashed = false)
+    void _monsterManager::PlaceGroup(size_t typeIndex, size_t num, Monster *leader, bool leashed)
     {
 	    uint8_t placed = 0;
 
 	    for (int try1 = 0; try1 < 10; try1++) {
 		    while (placed != 0) {
-			    ActiveMonsterCount--;
+			    MonsterManager.ActiveMonsterCount--;
 			    placed--;
 			    const Point &position = Monsters[ActiveMonsterCount].position.tile;
 			    dMonster[position.x][position.y] = 0;
@@ -423,8 +423,8 @@ void _monsterManager::PlaceUniqueMonsters()
 		    int x1 = xp;
 		    int y1 = yp;
 
-		    if (num + ActiveMonsterCount > totalmonsters) {
-			    num = totalmonsters - ActiveMonsterCount;
+		    if (num + MonsterManager.ActiveMonsterCount > totalmonsters) {
+			    num = totalmonsters - MonsterManager.ActiveMonsterCount;
 		    }
 
 		    unsigned j = 0;
@@ -454,7 +454,7 @@ void _monsterManager::PlaceUniqueMonsters()
 					    minion.mode = MonsterMode::Stand;
 				    }
 			    }
-			    ActiveMonsterCount++;
+			    MonsterManager.ActiveMonsterCount++;
 			    placed++;
 			    j++;
 		    }

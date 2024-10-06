@@ -14,6 +14,7 @@
 #include "engine/world_tile.hpp"
 #include "misdat.h"
 #include "monster.h"
+#include "monster_manager.h"
 #include "player.h"
 #include "spelldat.h"
 
@@ -158,7 +159,7 @@ struct Missile {
 	{
 		if (_micaster != TARGET_PLAYERS || _misource == -1)
 			return nullptr;
-		return &Monsters[_misource];
+		return &MonsterManager.Monsters[_misource];
 	}
 
 	[[nodiscard]] bool isSameSource(Missile &missile)

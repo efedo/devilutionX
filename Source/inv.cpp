@@ -25,6 +25,7 @@
 #include "inv_iterators.hpp"
 #include "levels/town.h"
 #include "minitext.h"
+#include "monster_manager.h"
 #include "options.h"
 #include "panels/ui_panels.hpp"
 #include "player.h"
@@ -2169,7 +2170,7 @@ void DoTelekinesis()
 	if (pcursitem != -1)
 		NetSendCmdGItem(true, CMD_REQUESTAGITEM, *MyPlayer, pcursitem);
 	if (pcursmonst != -1) {
-		Monster &monster = Monsters[pcursmonst];
+		Monster &monster = MonsterManager.Monsters[pcursmonst];
 		if (!monster.isTalker() && monster.talkMsg == TEXT_NONE)
 			NetSendCmdParam1(true, CMD_KNOCKBACK, pcursmonst);
 	}

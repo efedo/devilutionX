@@ -1,12 +1,15 @@
 #pragma once
 
 #include "monster.h"
+#include <vector>
 
 namespace devilution {
 
 struct _monsterManager {
 
-	size_t ActiveMonsterCount;
+	Monster Monsters[MaxMonsters]; // eftodo: move to monster manager
+	unsigned ActiveMonsters[MaxMonsters];
+	size_t ActiveMonsterCount; // eftodo: many loops use this variable; should all be replaced
 	size_t totalmonsters; // eftodo: move to MonsterManager  /** Tracks which missile files are already loaded */
 	int uniquetrans;
 
@@ -21,7 +24,7 @@ struct _monsterManager {
 	void PlaceQuestMonsters();
 	void LoadDiabMonsts();
 
-	private:
+
 
 	void PlaceUniqueMonst(UniqueMonsterType uniqindex, size_t minionType, int bosspacksize);
 	void PlaceUniqueMonsters();
@@ -29,8 +32,6 @@ struct _monsterManager {
 	void PlaceGroup(size_t typeIndex, size_t num, Monster *leader = nullptr, bool leashed = false);
 	bool CanPlaceMonster(Point position);
 	void DeleteMonster(size_t activeIndex);
-
-
 };
 
 extern _monsterManager MonsterManager;

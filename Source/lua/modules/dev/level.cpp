@@ -14,6 +14,8 @@
 #include "lua/modules/dev/level/map.hpp"
 #include "lua/modules/dev/level/warp.hpp"
 #include "monster.h"
+#include "monster_beastiary.h"
+#include "monster_manager.h"
 #include "objects.h"
 #include "player.h"
 #include "utils/endian_stream.hpp"
@@ -51,7 +53,7 @@ std::string ExportDun()
 			uint16_t monsterId = 0;
 			if (dMonster[x][y] > 0) {
 				for (int i = 0; i < 157; i++) {
-					if (MonstConvTbl[i] == Monsters[std::abs(dMonster[x][y]) - 1].type().type) {
+					if (MonstConvTbl[i] == MonsterManager.Monsters[std::abs(dMonster[x][y]) - 1].type().type) {
 						monsterId = i + 1;
 						break;
 					}

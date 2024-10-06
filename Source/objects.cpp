@@ -2190,7 +2190,7 @@ void OperateSarcophagus(Object &sarcophagus, bool sendMsg, bool sendLootMsg)
 	if (sarcophagus._oVar1 <= 2)
 		CreateRndItem(sarcophagus.position, false, sendLootMsg, false);
 	if (sarcophagus._oVar1 >= 8 && sarcophagus._oVar2 >= 0)
-		ActivateSkeleton(Monsters[sarcophagus._oVar2], sarcophagus.position);
+		ActivateSkeleton(MonsterManager.Monsters[sarcophagus._oVar2], sarcophagus.position);
 	if (sendMsg)
 		NetSendCmdLoc(MyPlayerId, false, CMD_OPERATEOBJ, sarcophagus.position);
 }
@@ -3130,7 +3130,7 @@ void OperateBookcase(Object &bookcase, bool sendmsg, bool sendLootMsg)
 	CreateTypeItem(bookcase.position, false, ItemType::Misc, IMISC_BOOK, sendLootMsg, false);
 
 	if (Quests[Q_ZHAR].IsAvailable()) {
-		Monster &zhar = Monsters[MAX_PLRS];
+		Monster &zhar = MonsterManager.Monsters[MAX_PLRS];
 		if (zhar.mode == MonsterMode::Stand // prevents playing the "angry" message for the second time if zhar got aggroed by losing vision and talking again
 		    && zhar.uniqueType == UniqueMonsterType::Zhar
 		    && zhar.activeForTicks == UINT8_MAX
@@ -3507,7 +3507,7 @@ void BreakBarrel(const Player &player, Object &barrel, bool forcebreak, bool sen
 				CreateRndItem(barrel.position, false, sendmsg, false);
 		}
 		if (barrel._oVar2 >= 8 && barrel._oVar4 >= 0)
-			ActivateSkeleton(Monsters[barrel._oVar4], barrel.position);
+			ActivateSkeleton(MonsterManager.Monsters[barrel._oVar4], barrel.position);
 	}
 	if (&player == MyPlayer) {
 		NetSendCmdLoc(MyPlayerId, false, CMD_BREAKOBJ, barrel.position);

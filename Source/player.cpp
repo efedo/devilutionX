@@ -33,6 +33,7 @@
 #include "loadsave.h"
 #include "minitext.h"
 #include "missiles.h"
+#include "monster_beastiary.h"
 #include "nthread.h"
 #include "objects.h"
 #include "options.h"
@@ -1092,7 +1093,7 @@ void CheckNewPath(Player &player, bool pmWillBeCalled)
 	case ACTION_ATTACKMON:
 	case ACTION_RATTACKMON:
 	case ACTION_SPELLMON:
-		monster = &Monsters[targetId];
+		monster = &MonsterManager.Monsters[targetId];
 		if ((monster->hitPoints >> 6) <= 0) {
 			player.Stop();
 			return;
@@ -1866,19 +1867,19 @@ void Player::UpdatePreviewCelSprite(_cmd_id cmdId, Point point, uint16_t wParam1
 
 	switch (cmdId) {
 	case _cmd_id::CMD_RATTACKID: {
-		Monster &monster = Monsters[wParam1];
+		Monster &monster = MonsterManager.Monsters[wParam1];
 		dir = GetDirection(position.future, monster.position.future);
 		graphic = player_graphic::Attack;
 		break;
 	}
 	case _cmd_id::CMD_SPELLID: {
-		Monster &monster = Monsters[wParam1];
+		Monster &monster = MonsterManager.Monsters[wParam1];
 		dir = GetDirection(position.future, monster.position.future);
 		graphic = GetPlayerGraphicForSpell(static_cast<SpellID>(wParam2));
 		break;
 	}
 	case _cmd_id::CMD_ATTACKID: {
-		Monster &monster = Monsters[wParam1];
+		Monster &monster = MonsterManager.Monsters[wParam1];
 		point = monster.position.future;
 		minimalWalkDistance = 2;
 		if (!monster.canTalkTo()) {
@@ -2829,7 +2830,7 @@ void SyncPlrKill(Player &player, DeathReason deathReason)
 void RemovePlrMissiles(const Player &player)
 {
 	if (leveltype != DTYPE_TOWN && &player == MyPlayer) {
-		Monster &golem = Monsters[MyPlayerId];
+		Monster &golem = MonsterManager.Monsters[MyPlayerId];
 		if (golem.position.tile.x != 1 || golem.position.tile.y != 0) {
 			KillMyGolem();
 			AddCorpse(golem.position.tile, golem.type().corpseId, golem.direction);
@@ -2843,7 +2844,7 @@ void RemovePlrMissiles(const Player &player)
 
 	for (auto &missile : Missiles) {
 		if (missile._mitype == MissileID::StoneCurse && &Players[missile._misource] == &player) {
-			Monsters[missile.var2].mode = static_cast<MonsterMode>(missile.var1);
+			MonsterManager.Monsters[missile.var2].mode = static_cast<MonsterMode>(missile.var1);
 		}
 	}
 }
@@ -3062,7 +3063,7 @@ bool PosOkPlayer(const Player &player, Point position)
 		if (dMonster[position.x][position.y] <= 0) {
 			return false;
 		}
-		if ((Monsters[dMonster[position.x][position.y] - 1].hitPoints >> 6) > 0) {
+		if ((MonsterManager.Monsters[dMonster[position.x][position.y] - 1].hitPoints >> 6) > 0) {
 			return false;
 		}
 	}
@@ -3415,7 +3416,7 @@ void PlayDungMsgs()
 		myPlayer.Say(HeroSpeech::IMustBeGettingClose, 40);
 		myPlayer.pDungMsgs |= DungMsgHell;
 	} else if (!setlevel && currlevel == 16 && !myPlayer._pLvlVisited[16] && (myPlayer.pDungMsgs & DungMsgDiablo) == 0) {
-		for (auto &monster : Monsters) {
+		for (auto &monster : MonsterManager.Monsters) {
 			if (monster.type().type != MT_DIABLO) continue;
 			if (monster.hitPoints > 0) {
 				sfxdelay = 40;

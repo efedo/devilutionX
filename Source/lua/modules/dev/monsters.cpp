@@ -12,6 +12,8 @@
 #include "lua/metadoc.hpp"
 #include "monstdat.h"
 #include "monster.h"
+#include "monster_beastiary.h"
+#include "monster_manager.h"
 #include "player.h"
 #include "utils/str_case.hpp"
 #include "utils/str_cat.hpp"
@@ -139,7 +141,7 @@ std::string DebugCmdSpawnMonster(std::string name, std::optional<unsigned> count
 
 	Player &myPlayer = *MyPlayer;
 
-	size_t monstersToSpawn = std::min<size_t>(MaxMonsters - ActiveMonsterCount, count);
+	size_t monstersToSpawn = std::min<size_t>(MaxMonsters - MonsterManager.ActiveMonsterCount, count);
 	if (monstersToSpawn == 0)
 		return "Can't spawn any monsters";
 

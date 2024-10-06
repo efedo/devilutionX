@@ -19,6 +19,7 @@
 #include "engine/random.hpp"
 #include "engine/world_tile.hpp"
 #include "menu.h"
+#include "monster_manager.h"
 #include "nthread.h"
 #include "options.h"
 #include "pfile.h"
@@ -214,7 +215,7 @@ void MonsterSeeds()
 	sgdwGameLoops++;
 	const uint32_t seed = (sgdwGameLoops >> 8) | (sgdwGameLoops << 24);
 	for (uint32_t i = 0; i < MaxMonsters; i++)
-		Monsters[i].aiSeed = seed + i;
+		MonsterManager.Monsters[i].aiSeed = seed + i;
 }
 
 void HandleTurnUpperBit(uint8_t pnum)

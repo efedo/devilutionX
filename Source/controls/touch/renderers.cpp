@@ -11,6 +11,7 @@
 #include "inv.h"
 #include "levels/gendung.h"
 #include "minitext.h"
+#include "monster_manager.h"
 #include "panels/ui_panels.hpp"
 #include "qol/stash.h"
 #include "stores.h"
@@ -438,7 +439,7 @@ VirtualGamepadButtonType PrimaryActionButtonRenderer::GetTownButtonType()
 VirtualGamepadButtonType PrimaryActionButtonRenderer::GetDungeonButtonType()
 {
 	if (pcursmonst != -1) {
-		const Monster &monster = Monsters[pcursmonst];
+		const Monster &monster = MonsterManager.Monsters[pcursmonst];
 		if (monster.isTalker() || monster.talkMsg != TEXT_NONE)
 			return GetTalkButtonType(virtualPadButton->isHeld);
 	}

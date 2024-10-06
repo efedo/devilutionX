@@ -28,6 +28,7 @@
 #include "inv.h"
 #include "levels/trigs.h"
 #include "missiles.h"
+#include "monster_manager.h"
 #include "options.h"
 #include "qol/itemlabels.h"
 #include "qol/stash.h"
@@ -74,7 +75,7 @@ bool TrySelectMonster(bool flipflag, Point tile, tl::function_ref<bool(const Mon
 		if (!InDungeonBounds(posToCheck) || dMonster[posToCheck.x][posToCheck.y] == 0)
 			return;
 		const uint16_t monsterId = std::abs(dMonster[posToCheck.x][posToCheck.y]) - 1;
-		const Monster &monster = Monsters[monsterId];
+		const Monster &monster = MonsterManager.Monsters[monsterId];
 		if (IsTileLit(posToCheck) && HasAnyOf(monster.data().selectionRegion, selectionRegion) && isValidMonster(monster)) {
 			cursPosition = posToCheck;
 			pcursmonst = monsterId;
@@ -300,7 +301,7 @@ bool TrySelectPixelBased(Point tile)
 					return true;
 				}
 			} else {
-				const Monster &monster = Monsters[monsterId];
+				const Monster &monster = MonsterManager.Monsters[monsterId];
 				if (IsTileLit(adjacentTile) && IsValidMonsterForSelection(monster)) {
 					const ClxSprite sprite = monster.animInfo.currentSprite();
 					Displacement renderingOffset = monster.getRenderingOffset(sprite);

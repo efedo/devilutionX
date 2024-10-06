@@ -271,7 +271,7 @@ void LeftMouseCmd(bool bShift)
 			LastMouseButtonAction = MouseActionType::Attack;
 			NetSendCmdLoc(MyPlayerId, true, CMD_RATTACKXY, cursPosition);
 		} else if (pcursmonst != -1) {
-			if (Monsters[pcursmonst].canTalkTo()) {
+			if (MonsterManager.Monsters[pcursmonst].canTalkTo()) {
 				NetSendCmdParam1(true, CMD_ATTACKID, pcursmonst);
 			} else {
 				LastMouseButtonAction = MouseActionType::AttackMonsterTarget;
@@ -284,7 +284,7 @@ void LeftMouseCmd(bool bShift)
 	} else {
 		if (bShift) {
 			if (pcursmonst != -1) {
-				if (Monsters[pcursmonst].canTalkTo()) {
+				if (MonsterManager.Monsters[pcursmonst].canTalkTo()) {
 					NetSendCmdParam1(true, CMD_ATTACKID, pcursmonst);
 				} else {
 					LastMouseButtonAction = MouseActionType::Attack;
@@ -1390,8 +1390,8 @@ void UnstuckChargers()
 			return;
 		}
 	}
-	for (size_t i = 0; i < ActiveMonsterCount; i++) {
-		Monster &monster = Monsters[ActiveMonsters[i]];
+	for (size_t i = 0; i < MonsterManager.ActiveMonsterCount; i++) {
+		Monster &monster = MonsterManager.Monsters[MonsterManager.ActiveMonsters[i]];
 		if (monster.mode == MonsterMode::Charge)
 			monster.mode = MonsterMode::Stand;
 	}
@@ -1399,8 +1399,8 @@ void UnstuckChargers()
 
 void UpdateMonsterLights()
 {
-	for (size_t i = 0; i < ActiveMonsterCount; i++) {
-		Monster &monster = Monsters[ActiveMonsters[i]];
+	for (size_t i = 0; i < MonsterManager.ActiveMonsterCount; i++) {
+		Monster &monster = MonsterManager.Monsters[MonsterManager.ActiveMonsters[i]];
 
 		if ((monster.flags & MFLAG_BERSERK) != 0) {
 			int lightRadius = leveltype == DTYPE_NEST ? 9 : 3;
@@ -2908,7 +2908,7 @@ void LoadGameLevel(bool firstflag, lvl_entry lvldir)
 		InitLighting();
 	}
 
-	Beastiary.InitLevelMonsters();
+	MonsterManager.InitLevelMonsters();
 	IncProgress();
 
 	Player &myPlayer = *MyPlayer;

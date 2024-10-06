@@ -61,23 +61,14 @@ namespace devilution {
 
 //CMonster LevelMonsterTypes[MaxLvlMTypes];
 //size_t LevelMonsterTypeCount;
-Monster Monsters[MaxMonsters];
-unsigned ActiveMonsters[MaxMonsters];
-//size_t ActiveMonsterCount;
+//Monster Monsters[MaxMonsters];
+//unsigned ActiveMonsters[MaxMonsters];
+//size_t MonsterManager.ActiveMonsterCount;
 /** Tracks the total number of monsters killed per monster_id. */
 int MonsterKillCounts[NUM_MTYPES];
 bool sgbSaveSoundOn;
 
-namespace {
-
-constexpr int NightmareToHitBonus = 85;
-constexpr int HellToHitBonus = 120;
-
-constexpr int NightmareAcBonus = 50;
-constexpr int HellAcBonus = 80;
-
-
-constexpr const std::array<_monster_id, 12> SkeletonTypes {
+const std::array<_monster_id, 12> SkeletonTypes {
 	MT_WSKELAX,
 	MT_TSKELAX,
 	MT_RSKELAX,
@@ -92,6 +83,14 @@ constexpr const std::array<_monster_id, 12> SkeletonTypes {
 	MT_XSKELSD,
 };
 
+
+namespace {
+
+constexpr int NightmareToHitBonus = 85;
+constexpr int HellToHitBonus = 120;
+
+constexpr int NightmareAcBonus = 50;
+constexpr int HellAcBonus = 80;
 
 void NewMonsterAnim(Monster &monster, MonsterGraphic graphic, Direction md, AnimationDistributionFlags flags = AnimationDistributionFlags::None, int8_t numSkippedFrames = 0, int8_t distributeFramesBeforeFrame = 0)
 {
@@ -148,9 +147,9 @@ void UpdateEnemy(Monster &monster)
 			}
 		}
 	}
-	for (size_t i = 0; i < ActiveMonsterCount; i++) {
-		const unsigned monsterId = ActiveMonsters[i];
-		Monster &otherMonster = Monsters[monsterId];
+	for (size_t i = 0; i < MonsterManager.ActiveMonsterCount; i++) {
+		const unsigned monsterId = MonsterManager.ActiveMonsters[i];
+		Monster &otherMonster = MonsterManager.Monsters[monsterId];
 		if (&otherMonster == &monster)
 			continue;
 		if ((otherMonster.hitPoints >> 6) <= 0)
@@ -331,9 +330,9 @@ void DiabloDeath(Monster &diablo, bool sendmsg)
 		NetSendCmdQuest(true, quest);
 	sgbSaveSoundOn = gbSoundOn;
 	gbProcessPlayers = false;
-	for (size_t i = 0; i < ActiveMonsterCount; i++) {
-		int monsterId = ActiveMonsters[i];
-		Monster &monster = Monsters[monsterId];
+	for (size_t i = 0; i < MonsterManager.ActiveMonsterCount; i++) {
+		int monsterId = MonsterManager.ActiveMonsters[i];
+		Monster &monster = MonsterManager.Monsters[monsterId];
 		if (monster.type().type == MT_DIABLO || diablo.activeForTicks == 0)
 			continue;
 
@@ -701,7 +700,7 @@ void MonsterAttackPlayer(Monster &monster, Player &player, int hit, int minDam, 
 void MonsterAttackEnemy(Monster &monster, int hit, int minDam, int maxDam)
 {
 	if ((monster.flags & MFLAG_TARGETS_MONSTER) != 0)
-		MonsterAttackMonster(monster, Monsters[monster.enemy], hit, minDam, maxDam);
+		MonsterAttackMonster(monster, MonsterManager.Monsters[monster.enemy], hit, minDam, maxDam);
 	else
 		MonsterAttackPlayer(monster, Players[monster.enemy], hit, minDam, maxDam);
 }
@@ -919,8 +918,8 @@ bool MonsterGotHit(Monster &monster)
 // eftodo
 void ReleaseMinions(const Monster &leader)
 {
-	for (size_t i = 0; i < ActiveMonsterCount; i++) {
-		Monster &minion = Monsters[ActiveMonsters[i]];
+	for (size_t i = 0; i < MonsterManager.ActiveMonsterCount; i++) {
+		Monster &minion = MonsterManager.Monsters[MonsterManager.ActiveMonsters[i]];
 		if (minion.leaderRelation == LeaderRelation::Leashed && minion.getLeader() == &leader) {
 			minion.setLeader(nullptr);
 		}
@@ -1660,7 +1659,7 @@ void FallenAi(Monster &monster)
 					if (m <= 0)
 						continue;
 
-					Monster &otherMonster = Monsters[m - 1];
+					Monster &otherMonster = MonsterManager.Monsters[m - 1];
 					if (otherMonster.ai != MonsterAIID::Fallen)
 						continue;
 
@@ -1713,7 +1712,7 @@ void LeoricAi(Monster &monster)
 		    && ((distanceToEnemy >= 3 && v < 4 * monster.intelligence + 35) || v < 6)
 		    && LineClearMissile(monster.position.tile, monster.enemyPosition)) {
 			Point newPosition = monster.position.tile + md;
-			if (monster.isTileAvailable(newPosition) && ActiveMonsterCount < MaxMonsters) {
+			if (monster.isTileAvailable(newPosition) && MonsterManager.ActiveMonsterCount < MaxMonsters) {
 				auto typeIndex = GetRandomSkeletonTypeIndex();
 				if (typeIndex) {
 					SpawnMonster(newPosition, md, *typeIndex, true);
@@ -1851,7 +1850,7 @@ void SneakAi(Monster &monster)
 	Direction md = GetMonsterDirection(monster);
 	if (monster.goal == MonsterGoal::Retreat && (monster.flags & MFLAG_NO_ENEMY) == 0) {
 		if ((monster.flags & MFLAG_TARGETS_MONSTER) != 0)
-			md = GetDirection(monster.position.tile, Monsters[monster.enemy].position.tile);
+			md = GetDirection(monster.position.tile, MonsterManager.Monsters[monster.enemy].position.tile);
 		else
 			md = GetDirection(monster.position.tile, Players[monster.enemy].position.last);
 		md = Opposite(md);
@@ -2344,7 +2343,7 @@ void HorkDemonAi(Monster &monster)
 	if (monster.goal == MonsterGoal::Normal) {
 		if ((distanceToEnemy >= 3) && v < 2 * monster.intelligence + 43) {
 			Point position = monster.position.tile + monster.direction;
-			if (monster.isTileAvailable(position) && ActiveMonsterCount < MaxMonsters) {
+			if (monster.isTileAvailable(position) && MonsterManager.ActiveMonsterCount < MaxMonsters) {
 				StartRangedSpecialAttack(monster, MissileID::HorkSpawn, 0);
 			}
 		} else if (distanceToEnemy < 2) {
@@ -2505,14 +2504,14 @@ void EnsureMonsterIndexIsActive(size_t monsterId)
 {
 	assert(monsterId < MaxMonsters);
 	for (size_t index = 0; index < MaxMonsters; index++) {
-		if (ActiveMonsters[index] != monsterId)
+		if (MonsterManager.ActiveMonsters[index] != monsterId)
 			continue;
-		if (index < ActiveMonsterCount)
+		if (index < MonsterManager.ActiveMonsterCount)
 			return; // monster is already active
-		const unsigned oldId = ActiveMonsters[ActiveMonsterCount];
-		ActiveMonsters[ActiveMonsterCount] = static_cast<unsigned>(monsterId);
-		ActiveMonsters[index] = oldId;
-		ActiveMonsterCount += 1;
+		const unsigned oldId = MonsterManager.ActiveMonsters[MonsterManager.ActiveMonsterCount];
+		MonsterManager.ActiveMonsters[MonsterManager.ActiveMonsterCount] = static_cast<unsigned>(monsterId);
+		MonsterManager.ActiveMonsters[index] = oldId;
+		MonsterManager.ActiveMonsterCount += 1;
 	}
 }
 
@@ -2585,14 +2584,6 @@ unsigned int Monster::exp(_difficulty difficulty) const
 
 	return monsterExp;
 }
-
-/**
- * @brief Calculates monster's chance to hit with special attack.
- * Fetches base value from @p MonstersData array or @p UniqueMonstersData.
- * @param difficulty - difficulty on which calculation is performed
- * @return Monster's chance to hit with special attack, including bonuses from difficulty and monster being unique
- */
-unsigned int Monster::toHitSpecial(_difficulty difficulty) const;
 
 /**
  * @brief Calculates monster's level.
@@ -2747,7 +2738,7 @@ void PrepareUniqueMonst(Monster &monster, UniqueMonsterType monsterType, size_t 
 	}
 
 	InitTRNForUniqueMonster(monster);
-	monster.uniqTrans = uniquetrans++;
+	monster.uniqTrans = MonsterManager.uniquetrans++;
 
 	if (uniqueMonsterData.customToHit != 0) {
 		monster.toHit = uniqueMonsterData.customToHit;
@@ -2769,7 +2760,7 @@ void PrepareUniqueMonst(Monster &monster, UniqueMonsterType monsterType, size_t 
 	}
 
 	if (uniqueMonsterData.monsterPack != UniqueMonsterPack::None) {
-		PlaceGroup(minionType, bosspacksize, &monster, uniqueMonsterData.monsterPack == UniqueMonsterPack::Leashed);
+		MonsterManager.PlaceGroup(minionType, bosspacksize, &monster, uniqueMonsterData.monsterPack == UniqueMonsterPack::Leashed);
 	}
 
 	if (monster.ai != MonsterAIID::Gargoyle) {
@@ -2782,10 +2773,10 @@ void PrepareUniqueMonst(Monster &monster, UniqueMonsterType monsterType, size_t 
 
 void WeakenNaKrul()
 {
-	if (currlevel != 24 || static_cast<size_t>(UberDiabloMonsterIndex) >= ActiveMonsterCount)
+	if (currlevel != 24 || static_cast<size_t>(UberDiabloMonsterIndex) >= MonsterManager.ActiveMonsterCount)
 		return;
 
-	Monster &monster = Monsters[UberDiabloMonsterIndex];
+	Monster &monster = MonsterManager.Monsters[UberDiabloMonsterIndex];
 	monster.playEffect(MonsterSound::Death);
 	monster.armorClass -= 50;
 	int hp = monster.maxHitPoints / 2;
@@ -2820,7 +2811,7 @@ void InitMonsters()
 		MonsterManager.PlaceQuestMonsters();
 	if (!setlevel) {
 		if (!gbIsSpawn)
-			PlaceUniqueMonsters();
+			MonsterManager.PlaceUniqueMonsters();
 		size_t na = 0;
 		for (int s = 16; s < 96; s++) {
 			for (int t = 16; t < 96; t++) {
@@ -2831,9 +2822,9 @@ void InitMonsters()
 		size_t numplacemonsters = na / 30;
 		if (gbIsMultiplayer)
 			numplacemonsters += numplacemonsters / 2;
-		if (ActiveMonsterCount + numplacemonsters > MaxMonsters - 10)
-			numplacemonsters = MaxMonsters - 10 - ActiveMonsterCount;
-		totalmonsters = ActiveMonsterCount + numplacemonsters;
+		if (MonsterManager.ActiveMonsterCount + numplacemonsters > MaxMonsters - 10)
+			numplacemonsters = MaxMonsters - 10 - MonsterManager.ActiveMonsterCount;
+		MonsterManager.totalmonsters = MonsterManager.ActiveMonsterCount + numplacemonsters;
 		int numscattypes = 0;
 		size_t scattertypes[NUM_MTYPES];
 		for (size_t i = 0; i < Beastiary.LevelMonsterTypeCount; i++) {
@@ -2842,7 +2833,7 @@ void InitMonsters()
 				numscattypes++;
 			}
 		}
-		while (ActiveMonsterCount < totalmonsters) {
+		while (MonsterManager.ActiveMonsterCount < MonsterManager.totalmonsters) {
 			const size_t typeIndex = scattertypes[GenerateRnd(numscattypes)];
 			if (currlevel == 1 || FlipCoin())
 				na = 1;
@@ -2850,7 +2841,7 @@ void InitMonsters()
 				na = GenerateRnd(2) + 2;
 			else
 				na = GenerateRnd(3) + 3;
-			PlaceGroup(typeIndex, na);
+			MonsterManager.PlaceGroup(typeIndex, na);
 		}
 	}
 	for (int i = 0; i < nt; i++) {
@@ -2865,15 +2856,15 @@ void InitMonsters()
 
 void SpawnMonster(Point position, Direction dir, size_t typeIndex, bool startSpecialStand /*= false*/)
 {
-	if (ActiveMonsterCount >= MaxMonsters)
+	if (MonsterManager.ActiveMonsterCount >= MaxMonsters)
 		return;
 
 	// The command is only executed for the level owner, to prevent desyncs in multiplayer.
 	if (!MyPlayer->isLevelOwnedByLocalClient())
 		return;
 
-	size_t monsterIndex = ActiveMonsters[ActiveMonsterCount];
-	ActiveMonsterCount += 1;
+	size_t monsterIndex = MonsterManager.ActiveMonsters[MonsterManager.ActiveMonsterCount];
+	MonsterManager.ActiveMonsterCount += 1;
 	uint32_t seed = GetLCGEngineState();
 	// Update local state immediately to increase ActiveMonsterCount instantly (this allows multiple monsters to be spawned in one game tick)
 	InitializeSpawnedMonster(position, dir, typeIndex, monsterIndex, seed);
@@ -2885,16 +2876,16 @@ void LoadDeltaSpawnedMonster(size_t typeIndex, size_t monsterId, uint32_t seed)
 	SetRndSeed(seed);
 	EnsureMonsterIndexIsActive(monsterId);
 	WorldTilePosition position = GolemHoldingCell;
-	Monster &monster = Monsters[monsterId];
+	Monster &monster = MonsterManager.Monsters[monsterId];
 	monster.clearSquares();
-	InitMonster(monster, Direction::South, typeIndex, position);
+	monster.InitMonster(Direction::South, typeIndex, position);
 }
 
 void InitializeSpawnedMonster(Point position, Direction dir, size_t typeIndex, size_t monsterId, uint32_t seed)
 {
 	SetRndSeed(seed);
 	EnsureMonsterIndexIsActive(monsterId);
-	Monster &monster = Monsters[monsterId];
+	Monster &monster = MonsterManager.Monsters[monsterId];
 	monster.clearSquares();
 
 	// When we receive a network message, the position we got for the new monster may already be occupied.
@@ -2911,7 +2902,7 @@ void InitializeSpawnedMonster(Point position, Direction dir, size_t typeIndex, s
 	position = freePosition.value_or(position);
 
 	monster.occupyTile(position, false);
-	InitMonster(monster, dir, typeIndex, position);
+	monster.InitMonster(dir, typeIndex, position);
 
 	if (IsSkel(monster.type().type))
 		StartSpecialStand(monster, dir);
@@ -3160,7 +3151,7 @@ void Monster::startDeath(const Player &player, bool sendmsg)
 
 void KillMyGolem()
 {
-	Monster &golem = Monsters[MyPlayerId];
+	Monster &golem = MonsterManager.Monsters[MyPlayerId];
 	delta_kill_monster(golem, golem.position.tile, *MyPlayer);
 	NetSendCmdLoc(MyPlayerId, false, CMD_KILLGOLEM, golem.position.tile);
 	golem.startKill(*MyPlayer);
@@ -3335,7 +3326,7 @@ void GolumAi(Monster &golem)
 	}
 
 	if ((golem.flags & MFLAG_NO_ENEMY) == 0) {
-		Monster &enemy = Monsters[golem.enemy];
+		Monster &enemy = MonsterManager.Monsters[golem.enemy];
 		int mex = golem.position.tile.x - enemy.position.future.x;
 		int mey = golem.position.tile.y - enemy.position.future.y;
 		golem.direction = GetDirection(golem.position.tile, enemy.position.tile);
@@ -3352,7 +3343,7 @@ void GolumAi(Monster &golem)
 							continue;
 						int enemyId = dMonster[mx][my];
 						if (enemyId > 0)
-							Monsters[enemyId - 1].activeForTicks = UINT8_MAX;
+							MonsterManager.Monsters[enemyId - 1].activeForTicks = UINT8_MAX;
 					}
 				}
 			}
@@ -3382,7 +3373,7 @@ void GolumAi(Monster &golem)
 void DeleteMonsterList()
 {
 	for (int i = 0; i < MAX_PLRS; i++) {
-		Monster &golem = Monsters[i];
+		Monster &golem = MonsterManager.Monsters[i];
 		if (!golem.isInvalid)
 			continue;
 
@@ -3392,11 +3383,11 @@ void DeleteMonsterList()
 		golem.isInvalid = false;
 	}
 
-	for (size_t i = MAX_PLRS; i < ActiveMonsterCount;) {
-		if (Monsters[ActiveMonsters[i]].isInvalid) {
-			if (pcursmonst == static_cast<int>(ActiveMonsters[i])) // Unselect monster if player highlighted it
+	for (size_t i = MAX_PLRS; i < MonsterManager.ActiveMonsterCount;) {
+		if (MonsterManager.Monsters[MonsterManager.ActiveMonsters[i]].isInvalid) {
+			if (pcursmonst == static_cast<int>(MonsterManager.ActiveMonsters[i])) // Unselect monster if player highlighted it
 				pcursmonst = -1;
-			DeleteMonster(i);
+			MonsterManager.DeleteMonster(i);
 		} else {
 			i++;
 		}
@@ -3407,9 +3398,9 @@ void ProcessMonsters()
 {
 	DeleteMonsterList();
 
-	assert(ActiveMonsterCount <= MaxMonsters);
-	for (size_t i = 0; i < ActiveMonsterCount; i++) {
-		Monster &monster = Monsters[ActiveMonsters[i]];
+	assert(MonsterManager.ActiveMonsterCount <= MaxMonsters);
+	for (size_t i = 0; i < MonsterManager.ActiveMonsterCount; i++) {
+		Monster &monster = MonsterManager.Monsters[MonsterManager.ActiveMonsters[i]];
 		FollowTheLeader(monster);
 		if (gbIsMultiplayer) {
 			SetRndSeed(monster.aiSeed);
@@ -3446,7 +3437,7 @@ void ProcessMonsters()
 		if ((monster.flags & MFLAG_TARGETS_MONSTER) != 0) {
 			assert(monster.enemy >= 0 && monster.enemy < MaxMonsters);
 			// BUGFIX: enemy target may be dead at time of access, thus reading garbage data from `Monsters[monster.enemy].position.future`.
-			monster.position.last = Monsters[monster.enemy].position.future;
+			monster.position.last = MonsterManager.Monsters[monster.enemy].position.future;
 			monster.enemyPosition = monster.position.last;
 		} else {
 			assert(monster.enemy >= 0 && monster.enemy < MAX_PLRS);
@@ -3654,7 +3645,7 @@ void M_FallenFear(Point position)
 		int m = dMonster[tile.x][tile.y];
 		if (m == 0)
 			continue;
-		Monster &monster = Monsters[std::abs(m) - 1];
+		Monster &monster = MonsterManager.Monsters[std::abs(m) - 1];
 		if (monster.ai != MonsterAIID::Fallen || monster.hitPoints >> 6 <= 0)
 			continue;
 
@@ -3735,7 +3726,7 @@ void PrintMonstHistory(int mt)
 
 void PrintUniqueHistory()
 {
-	Monster &monster = Monsters[pcursmonst];
+	Monster &monster = MonsterManager.Monsters[pcursmonst];
 	if (*sgOptions.Gameplay.showMonsterType) {
 		AddInfoBoxString(fmt::format(fmt::runtime(_("Type: {:s}")), GetMonsterTypeText(monster.data())));
 	}
@@ -3784,7 +3775,7 @@ void Monster::playEffect(MonsterSound mode)
 void MissToMonst(Missile &missile, Point position)
 {
 	assert(static_cast<size_t>(missile._misource) < MaxMonsters);
-	Monster &monster = Monsters[missile._misource];
+	Monster &monster = MonsterManager.Monsters[missile._misource];
 
 	Point oldPosition = missile.position.tile;
 	monster.occupyTile(position, false);
@@ -3851,14 +3842,15 @@ Monster *FindMonsterAtPosition(Point position, bool ignoreMovingMonsters)
 		return nullptr;
 	}
 
-	return &Monsters[std::abs(monsterId) - 1];
+	return &MonsterManager.Monsters[std::abs(monsterId) - 1];
 }
 
+// eftodo: move to monster manager
 Monster *FindUniqueMonster(UniqueMonsterType monsterType)
 {
-	for (size_t i = 0; i < ActiveMonsterCount; i++) {
-		int monsterId = ActiveMonsters[i];
-		Monster &monster = Monsters[monsterId];
+	for (size_t i = 0; i < MonsterManager.ActiveMonsterCount; i++) {
+		int monsterId = MonsterManager.ActiveMonsters[i];
+		Monster &monster = MonsterManager.Monsters[monsterId];
 		if (monster.uniqueType == monsterType)
 			return &monster;
 	}
@@ -4039,7 +4031,7 @@ void decode_enemy(Monster &monster, int enemyId)
 		monster.flags |= MFLAG_TARGETS_MONSTER;
 		enemyId -= MAX_PLRS;
 		monster.enemy = enemyId;
-		monster.enemyPosition = Monsters[enemyId].position.future;
+		monster.enemyPosition = MonsterManager.Monsters[enemyId].position.future;
 	}
 }
 
@@ -4050,7 +4042,7 @@ void decode_enemy(Monster &monster, int enemyId)
  */
 [[nodiscard]] size_t Monster::getId() const
 {
-	return std::distance<const Monster *>(&Monsters[0], this);
+	return std::distance<const Monster *>(&MonsterManager.Monsters[0], this);
 }
 
 Monster *Monster::getLeader() const
@@ -4058,7 +4050,7 @@ Monster *Monster::getLeader() const
 	if (leader == Monster::NoLeader)
 		return nullptr;
 
-	return &Monsters[leader];
+	return &MonsterManager.Monsters[leader];
 }
 
 void Monster::setLeader(const Monster *leader)
@@ -4074,6 +4066,11 @@ void Monster::setLeader(const Monster *leader)
 	this->leader = static_cast<uint8_t>(leader->getId());
 	leaderRelation = LeaderRelation::Leashed;
 	ai = leader->ai;
+}
+
+[[nodiscard]] bool Monster::hasLeashedMinions() const
+{
+	return isUnique() && UniqueMonstersData[static_cast<size_t>(uniqueType)].monsterPack == UniqueMonsterPack::Leashed;
 }
 
 /**
@@ -4167,6 +4164,11 @@ void Monster::tag(const Player &tagger)
 	whoHit |= 1 << tagger.getId();
 }
 
+[[nodiscard]] bool Monster::isUnique() const
+{
+	return uniqueType != UniqueMonsterType::None;
+}
+
 bool Monster::tryLiftGargoyle()
 {
 	if (ai == MonsterAIID::Gargoyle && (flags & MFLAG_ALLOW_SPECIAL) != 0) {
@@ -4177,6 +4179,12 @@ bool Monster::tryLiftGargoyle()
 	return false;
 }
 
+/**
+ * @brief Gets the visual/shown monster mode.
+ *
+ * When a monster is petrified it's monster mode is changed to MonsterMode::Petrified.
+ * But for graphics and rendering we show the old/real mode.
+ */
 MonsterMode Monster::getVisualMonsterMode() const
 {
 	if (mode != MonsterMode::Petrified)
@@ -4191,6 +4199,21 @@ MonsterMode Monster::getVisualMonsterMode() const
 	return MonsterMode::Petrified;
 }
 
+[[nodiscard]] Displacement Monster::getRenderingOffset(const ClxSprite sprite) const
+{
+	Displacement offset = { -CalculateWidth2(sprite.width()), 0 };
+	if (isWalking())
+		offset += GetOffsetForWalking(animInfo, direction);
+	return offset;
+}
+
+
+/**
+ * @brief Calculates monster's chance to hit with special attack.
+ * Fetches base value from @p MonstersData array or @p UniqueMonstersData.
+ * @param difficulty - difficulty on which calculation is performed
+ * @return Monster's chance to hit with special attack, including bonuses from difficulty and monster being unique
+ */
 unsigned int Monster::toHitSpecial(_difficulty difficulty) const
 {
 	unsigned int baseToHitSpecial = data().toHitSpecial;
@@ -4207,6 +4230,11 @@ unsigned int Monster::toHitSpecial(_difficulty difficulty) const
 	return baseToHitSpecial;
 }
 
+/**
+ * @brief Sets a tile/dMonster to be occupied by the monster
+ * @param position tile to update
+ * @param isMoving specifies whether the monster is moving or not (true/moving results in a negative index in dMonster)
+ */
 void Monster::occupyTile(Point position, bool isMoving) const
 {
 	int16_t id = static_cast<int16_t>(this->getId() + 1);

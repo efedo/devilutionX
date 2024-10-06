@@ -4,6 +4,7 @@
  * Adds monster health bar QoL feature
  */
 #include "monhealthbar.h"
+#include "monster_beastiary.h"
 
 #include <cstdint>
 
@@ -14,6 +15,7 @@
 #include "engine/clx_sprite.hpp"
 #include "engine/load_clx.hpp"
 #include "engine/render/clx_render.hpp"
+#include "monster_manager.h"
 #include "options.h"
 #include "utils/language.h"
 #include "utils/str_cat.hpp"
@@ -66,7 +68,7 @@ void DrawMonsterHealthBar(const Surface &out)
 	if (pcursmonst == -1)
 		return;
 
-	const Monster &monster = Monsters[pcursmonst];
+	const Monster &monster = MonsterManager.Monsters[pcursmonst];
 
 	const int width = (*healthBox)[0].width();
 	const int barWidth = (*health)[0].width();
